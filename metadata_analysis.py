@@ -85,7 +85,7 @@ def plot_features(df: pd.DataFrame, x_axis: str, y_axis: str, save_name: str):
     plt.ylabel(y_axis)
     plt.title(f'{x_axis} vs. {y_axis}')
     plt.xticks(rotation=90)
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.savefig(f"metadata_analysis/{save_name}.jpg")
     # plt.show()
 

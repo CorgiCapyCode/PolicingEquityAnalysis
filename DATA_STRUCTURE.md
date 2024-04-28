@@ -6,7 +6,7 @@ The directories sometimes contain files or directories which are doubled. This w
 
 | Abbreviation | Translation | Source |
 |--------------|-------------|--------|
-| CPE | Center for Policing Equity | kaggle.com |
+| CPE | Center for Policing Equity | https://www.kaggle.com/datasets/center-for-policing-equity/data-science-for-good |
 | ACS | American Community Survey | https://www.census.gov/programs-surveys/acs |
 | HC | Housing Characteristics | https://www.census.gov/library/publications/1951/dec/hc-5.html
 | UOF | Use of Force | https://policingequity.org/images/pdfs-doc/CPE_SoJ_Race-Arrests-UoF_2016-07-08-1130.pdf | 
