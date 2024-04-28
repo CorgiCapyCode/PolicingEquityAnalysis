@@ -11,6 +11,7 @@ The directories sometimes contain files or directories which are doubled. This w
 | HC | Housing Characteristics | https://www.census.gov/library/publications/1951/dec/hc-5.html
 | UOF | Use of Force | https://policingequity.org/images/pdfs-doc/CPE_SoJ_Race-Arrests-UoF_2016-07-08-1130.pdf | 
 | Dept | Department | |
+| FIO | Field Interrogation and Observation | https://data.boston.gov/dataset/boston-police-department-fio |
 
 ## General Notes
 Link to ACS: https://data.census.gov/
@@ -50,24 +51,32 @@ Link to ACS: https://data.census.gov/
 
 ### Police Data (each department directory)
 - The strucutre of the police data files differs from department to department.
-- The name of the file is different, while UOF is often contained in the filename, indicating the focus on "use of force".
+- TThe file names vary, though "UOF" is often appears in the filename, indicating the focus on "use of force".
 
 - Feature analysis:
-    - The files contain different features - in total there are 106 unique feature names.
-    - The files use between 8 (Dept_49-00035) and 34 (Dept_11-00091) features.
-    - There is only one feature that is used by all (INCIDENT_DATE). This feautre has different structures (e.g. with date and time, only date, separate feature for time).
-    - 64 of the features are used by only one department.
+    - The files contain different features, totaling 106 unique feature names.
+    - The files contain 8 (Dept_49-00035) and 34 (Dept_11-00091) features.
+    - Only one feature is used by all departments (INCIDENT_DATE). This feautre exhibits structures (e.g. date and time, only date, separate feature for time).
+    - 64 features are unique to a single department.
     - Shared feature names do not necessarly have the same data structure (e.g. INCIDENT_UNIQUE_IDENTIFIER is shared 9 times, but only two use the same structure).
     - Two departments use two types of identifiers.
-    - The location is stored in various different features, but included in all department reports (with different structure and details).
-    - The correlation of feautre usage shows that the highest score is around 0.52 (Dept_24-00013 and Dept_49-00033).
-        - From the 13 features used by Dept_24-00013 4 are not used by Dept_49-00033.
-        - From the 18 features used by Dept_49-00033 9 are not used by Dept_24-00013.
-        - Only 9 features are used from both reports.
-    - The correlation coefficients increase when the features are named in a standardized manner (e.g. the unique incident identifier has different feature names).
-    - The correlation coefficients decrease when considering same naming, but different content.
+    - Location data is stored in various features, but is included in all department reports with different structure and details.
 
-Comparison between different reports are not usuable. Summarizing values such as total number of crimes can be used and compared along with the results from the ACS reports (see below).
+- Correlation of Feature Usage
+    - Using unprocessed data, the correlation matrix shows the highest correlation between Dept_24-00013 and Dept_49-00033, with 0.52.
+        - Dept_24-00013 uses 13 features, with 4 not used by Dept_49-00033.
+        - Dept_49-00033 uses 18 features, with 9 not used by Dept_24-00013.
+        - Only 9 features are used in both reports.
+        - The average correlation is 0.24.
+    - Applying a simple categorization based on feature names increased the correlation coefficient up to 0.82.
+        - The categorization included for example:
+            - Correcting spelling errors (e.g. SUBJECT_RACT instead of SUBJECT_RACE).
+            - Splitting all location features into two categories: LOCATION and GEO_INFORMATION.
+            - Captuzring the health status in one feature for the subject and for the officer.
+            - Summarizing all use of force types into one feature.
+            - Creating one unique identifier.
+        - The categorization led to a loss of information.
+- It is not practical to compare the police data in detail, given the differences in the structure and content.
 
 ### ACS_(x)_metadata.csv (each subdirectory in ACS data)
 Execute metadata.py
