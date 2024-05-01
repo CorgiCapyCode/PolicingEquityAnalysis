@@ -103,7 +103,9 @@ Data columns (total 34 columns):            \
 dtypes: float64(2), int64(7), object(25) \
 memory usage: 39.5+ MB
 
-## Feature comparison
+## Data pre-filtering
+
+### Redundant Features
 
 Based on the description it was suspected that some features may contain redundant data. The description for SUBJECT_RACE (DESCRIPTION) even stated that it is identical with the feature OOFICER_RACE (RACE_DESC).
 
@@ -112,4 +114,165 @@ The feature comparison results in following feature pairs being identical:
 ('INCIDENT_DATE', 'FIO_DATE') & ('INCIDENT_TIME', 'FIO_TIME')   \
 ('SUBJECT_RACE', 'DESCRIPTION') &  ('OFFICER_RACE', 'RACE_DESC')
 
-The second feature (FIO_TIME and RACE_DESC) will be deleted.
+The second feature of both pairs (FIO_TIME and RACE_DESC) will be deleted.
+
+### Duplicanted Data Points
+
+The data points are checked for duplicants, while ignoring the first two columns, since they are unique identifiers (the first identifier is system generated and thus always different even for the the same case). \
+By comparing all remaining 30 features, 2421 duplicants where found and removed from the dataset. \
+The remaining number of data points is at this point: 149,809.
+
+### Classification of remaining features
+
+Numerical feature: quantitative feature
+Ordinal feature: feature with a meaningful order
+Nominal feature: feature without any order
+
+| #   | Column                                                     | Non-Null Count | Dtype   | Feature category |
+|-----|------------------------------------------------------------|----------------|---------|------------------|
+| 0   | (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)                      | 149809         | int64   | nominal          |
+| 1   | (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)                     | 149809         | int64   | nominal          |
+| 2   | (SUBJECT_GENDER, SEX)                                      | 149809         | object  | nominal          |
+| 3   | (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION)   | 149807         | object  | nominal          |
+| 4   | (LOCATION_DISTRICT, DIST)                                  | 149809         | object  | nominal          |
+| 5   | (LOCATION_DISTRICT.1, DIST_ID)                             | 149809         | int64   | nominal          |
+| 6   | (INCIDENT_DATE, FIO_DATE)                                  | 149809         | object  | ordinal          |
+| 7   | (SUBJECT_DETAILS, PRIORS)                                  | 129251         | object  | nominal          |
+| 8   | (SUBJECT_RACE, DESCRIPTION)                                | 149809         | object  | nominal          |
+| 9   | (SUBJECT_DETAILS.1, CLOTHING)                              | 136603         | object  | nominal          |
+| 10  | (SUBJECT_DETAILS.2, COMPLEXION)                            | 149809         | object  | nominal          |
+| 11  | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)                           | 149809         | object  | nominal          |
+| 12  | (UNKNOWN_FIELD_TYPE, TERRORISM)                            | 149809         | object  | nominal          |
+| 13  | (SEARCH_CONDUCTED, SEARCH)                                 | 20344          | object  | nominal          |
+| 14  | (SEARCH_REASON, BASIS)                                     | 34976          | object  | ordinal          |
+| 15  | (INCIDENT_REASON, STOP_REASONS)                            | 103566         | object  | nominal          |
+| 16  | (INCIDENT_REASON.1, FIOFS_REASONS)                         | 149809         | object  | nominal          |
+| 17  | (DISPOSITION, OUTCOME)                                     | 141042         | object  | nominal          |
+| 18  | (VEHICLE_MAKE, VEH_MAKE)                                   | 139573         | object  | nominal          |
+| 19  | (VEHICLE_YEAR, VEH_YEAR_NUM)                               | 149628         | float64 | numerical        |
+| 20  | (VEHICLE_COLOR, VEH_COLOR)                                 | 139188         | object  | nominal          |
+| 21  | (VEHICLE_MODEL, VEH_MODEL)                                 | 38354          | object  | nominal          |
+| 22  | (VEHICLE_DETAILS, VEH_OCCUPANT)                            | 39360          | object  | nominal          |
+| 23  | (VEHICLE_DETAILS.1, VEH_STATE)                             | 149809         | object  | nominal          |
+| 24  | (OFFICER_SUPERVISOR, SUPERVISOR_ID)                        | 133702         | float64 | nominal          |
+| 25  | (OFFICER_ID, OFFICER_ID)                                   | 149809         | int64   | nominal          |
+| 26  | (OFFICER_ASSIGNMENT, OFF_DIST_ID)                          | 149809         | int64   | nominal          |
+| 27  | (OFFICER_ASSIGNMENT.1, OFF_DIST)                           | 149809         | object  | nominal          |
+| 28  | (OFFICER_ETHNICITY, ETHNICITY)                             | 23772          | object  | nominal          |
+| 29  | (OFFICER_AGE, AGE_AT_FIO_CORRECTED)                        | 149809         | int64   | numerical        |
+| 30  | (LOCATION_STREET_NUMBER, STREET_ID)                        | 149809         | int64   | nominal          |
+| 31  | (LOCATION_CITY, CITY)                                      | 149809         | object  | nominal          |
+
+## Data Cleaning
+
+### Feature value cleaning
+
+Using the unique values incl. counts per feature results in:
+
+| #   | Column                                                     | Non-Null Count | Unique_Values  | n/a placeholder          | Further comments                                                      |
+|-----|------------------------------------------------------------|----------------|----------------|--------------------------|-----------------------------------------------------------------------|
+| 0   | (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)                      | 149809         | 149809         |                          | Item #1 appears to be the same unique identifier. Check for drop.     |
+| 1   | (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)                     | 149809         | 149809         |                          | Item #2 appears to be the same unique identifier. check for drop.     |
+| 2   | (SUBJECT_GENDER, SEX)                                      | 149809         | 3              | nominal                  |
+| 3   | (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION)   | 149807         | 38360          | #NAME? (47) + OTHERS (9) | Street names mentioned twice, with 00 and without.                    |
+| 4   | (LOCATION_DISTRICT, DIST)                                  | 149809         | 24             |                          | Has entry OTHER (25). Entries appear of different, non related types. |
+| 5   | (LOCATION_DISTRICT.1, DIST_ID)                             | 149809         | 24             | nominal                  | Compare with #4. Value counts correspond with each other.             |
+| 6   | (INCIDENT_DATE, FIO_DATE)                                  | 149809         | 2140           | ordinal                  |
+| 7   | (SUBJECT_DETAILS, PRIORS)                                  | 129251         | 3              | nominal                  |
+| 8   | (SUBJECT_RACE, DESCRIPTION)                                | 149809         | 8              | nominal                  |
+| 9   | (SUBJECT_DETAILS.1, CLOTHING)                              | 136603         | 102127         | nominal                  |
+| 10  | (SUBJECT_DETAILS.2, COMPLEXION)                            | 149809         | 10             | nominal                  |
+| 11  | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)                           | 149809         | 26             | nominal                  |
+| 12  | (UNKNOWN_FIELD_TYPE, TERRORISM)                            | 149809         | 2              | nominal                  |
+| 13  | (SEARCH_CONDUCTED, SEARCH)                                 | 20344          | 3              | nominal                  |
+| 14  | (SEARCH_REASON, BASIS)                                     | 34976          | 3              | ordinal                  |
+| 15  | (INCIDENT_REASON, STOP_REASONS)                            | 103566         | 6              |                          | check if where "other" a column exists with specification             |
+| 16  | (INCIDENT_REASON.1, FIOFS_REASONS)                         | 149809         | 222            |                          |
+| 17  | (DISPOSITION, OUTCOME)                                     | 141042         | 7              |                          |
+| 18  | (VEHICLE_MAKE, VEH_MAKE)                                   | 139573         | 47             | nominal                  |
+| 19  | (VEHICLE_YEAR, VEH_YEAR_NUM)                               | 149628         | 51             | numerical                |
+| 20  | (VEHICLE_COLOR, VEH_COLOR)                                 | 139188         | 16             | nominal                  |
+| 21  | (VEHICLE_MODEL, VEH_MODEL)                                 | 38354          | 2006           | nominal                  |
+| 22  | (VEHICLE_DETAILS, VEH_OCCUPANT)                            | 39360          | 2              | nominal                  |
+| 23  | (VEHICLE_DETAILS.1, VEH_STATE)                             | 149809         | 48             | nominal                  |
+| 24  | (OFFICER_SUPERVISOR, SUPERVISOR_ID)                        | 133702         | 219            | nominal                  |
+| 25  | (OFFICER_ID, OFFICER_ID)                                   | 149809         | 1793           |                          |                                                                       |
+| 26  | (OFFICER_ASSIGNMENT, OFF_DIST_ID)                          | 149809         | 26             |                          | Check with #27. Appears related.                                      |
+| 27  | (OFFICER_ASSIGNMENT.1, OFF_DIST)                           | 149809         | 26             |                          | Same value names as #4. Plus additional.                              |
+| 28  | (OFFICER_ETHNICITY, ETHNICITY)                             | 23772          | 1101           | Unknown (10)             | Requires cleaning, due to misspelling and other slight differences.   |
+| 29  | (OFFICER_AGE, AGE_AT_FIO_CORRECTED)                        | 149809         | 119            | -1 (3689)                | Contains implausible numbers like: 0 (202), >120 (27)                 |
+| 30  | (LOCATION_STREET_NUMBER, STREET_ID)                        | 149809         | 3155           |                          | Check and compare with #3.                                            |
+| 31  | (LOCATION_CITY, CITY)                                      | 149809         | 23             | NO DATA ENTERED (683530) | Has entry OTHER (14595).                                              |
+
+
+### Imputing and dropping
+
+MISSING: FIRST CHECK A LIST OF UNIQUE VALUES --> NO DATA, 0 etc. have to be replaced with pd.NA.
+
+needed to be done after feature cleaning: 
+The threshold for completed data was set to 30%. Meaning that all data points below 30% completed will be dropped. \
+This applies to 0 data points.
+According to the histogram, the lowest filling grade lies between 65% and 70%, most of the data have around 85% filling.
+
+
+
+
+# Agenda - Feature analysis
+Step:
+
+3. Apply different impute methods for the features with missing values
+
+Impute methods:
+- Numerical Features
+    - mean, median, mode (most frequent value)
+    - Regression, stochastic regression
+    - interpolation, extrapolation
+
+- Categorical Features (nominal, ordinal)
+    - mode (most frequent value)
+    - KNN imputation
+    - Probailistic Imputation
+    - Hot-Deck Imputation
+
+3.1 Handle outliers
+    - Check visually for each feature
+    - take 3 times of standard deviation
+    - drop lines
+
+4. Apply feature scaling
+Methods
+    - min-max-scaling
+    - standardization (variance scaling)
+    - robust scaling
+
+5. Apply feature encoding
+Methods
+    - One hot encoding
+
+6. Apply feature generation
+Methods
+- 
+
+7. Apply feature selection / dimensionality reduction
+
+Methods
+    - Principal Component Analysis (PCA) (DR) - only numerical features, not easily understandable feature space
+    - Multi-Dimensional Scaling (MDS) (DR) - for both types, easier, but still can be difficult to understand
+    - Local Linear Embedding (LLE) (DR)
+    - t-Dsitributed Stochastic Neighbor Embedding (t-SNE)
+    - feature ranking
+    - ANOVA
+    - Chi-Square test
+    - Mutual Information
+    - Permutation feature importance
+    - minimum/maximum accuracy
+    - Local Interpretable Model-agnostic explainations (LIME)
+    - Shapely Additive Explainations values (SHAP)
+    - Feature variance (low variance can be dropped - does not contain much information)ä
+    - Correlation matrix
+    - Exclusive Features Selection (EFS)
+    - Sequential Forward Feature Selection (SFS)
+    - Sequential Backward Feature Selection (SBS)
+    - Recursive feature elimination (RFE)
+
+    
