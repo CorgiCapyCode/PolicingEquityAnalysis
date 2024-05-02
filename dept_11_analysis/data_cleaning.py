@@ -3,19 +3,41 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def feature_value_cleaning(df: pd.DataFrame, show_results: bool =False):
-    unique_value_counts, num_unique_values = get_unique_value_df_for_features(df)
+def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value_modification: list =[], show_results: bool =False):
     
-    show_results = True
+    number_of_dropped_data_points, data_completion_perc = drop_not_filled_data(df=df, threshold=threshold)
+    unique_value_counts, num_unique_values = get_unique_value_df_for_features(df)
+
+    for feature_name, modification in feature_value_modification:
+        df = data_preprocessing(df=df, feature_name=feature_name, value_modification=modification)
+
+    # Last step!!!
+    # fill_missing_with_na(df=df)
+    
     if show_results:       
+        print(f"Dropped data points because of missing input: {number_of_dropped_data_points}")
+        plot_histogram_for_dp_completness(dp_completness=data_completion_perc)
+        print("Histrogram for data completness saved.") 
+        
         save_dataframes_to_csv(unique_value_counts)
         print("Number of unique values:")
         print(num_unique_values)
     
-    
-    # Last step!!!
-    fill_missing_with_na(df=df)
-    
+    return df
+
+def data_preprocessing(df: pd.DataFrame, feature_name: str, value_modification: list) -> pd.DataFrame:
+    for orginal_value, target_value in value_modification:
+        # df[feature_name].replace(orginal_value, target_value, inplace=True)
+        df[feature_name] = df[feature_name].replace(orginal_value,target_value)
+    return df
+
+def drop_not_filled_data(df: pd.DataFrame, threshold: float) -> int:
+    data_completion_perc = df.notna().mean(axis=1) * 100
+    data_to_drop = data_completion_perc <= threshold
+    number_of_data_to_be_dropped = data_to_drop.sum()
+    df.drop(df[data_to_drop].index, inplace=True)
+    return number_of_data_to_be_dropped, data_completion_perc
+  
 
 def fill_missing_with_na(df: pd.DataFrame):
     df.fillna(value=pd.NA, inplace=True)
@@ -38,22 +60,6 @@ def get_unique_value_df_for_features(df: pd.DataFrame) -> Tuple[dict, dict]:
 def save_dataframes_to_csv(dict_with_df: dict):
     for column, dataframe in dict_with_df.items():
         dataframe.to_csv(f"dept_11_analysis/data_files/{column}_unique_values.csv")
-
-
-def data_imputing(df: pd.DataFrame, threshold: float =30, show_results: bool =False):
-    number_of_dropped_data_points, data_completion_perc = drop_not_filled_data(df=df, threshold=threshold)
-    if show_results:
-        print(f"Dropped data points because of missing input: {number_of_dropped_data_points}")
-        plot_histogram_for_dp_completness(dp_completness=data_completion_perc)
-        print("Histrogram for data completness saved.")
-
-
-def drop_not_filled_data(df: pd.DataFrame, threshold: float) -> int:
-    data_completion_perc = df.notna().mean(axis=1) * 100
-    data_to_drop = data_completion_perc <= threshold
-    number_of_data_to_be_dropped = data_to_drop.sum()
-    df.drop(df[data_to_drop].index, inplace=True)
-    return number_of_data_to_be_dropped, data_completion_perc
 
 
 def plot_histogram_for_dp_completness(dp_completness: pd.Series):

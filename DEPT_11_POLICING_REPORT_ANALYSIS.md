@@ -165,45 +165,66 @@ Nominal feature: feature without any order
 
 ## Data Cleaning
 
-### Feature value cleaning
+### Feature value pre-check
 
 Using the unique values incl. counts per feature results in:
 
-| #   | Column                                                     | Non-Null Count | Unique_Values  | n/a placeholder          | Further comments                                                      |
-|-----|------------------------------------------------------------|----------------|----------------|--------------------------|-----------------------------------------------------------------------|
-| 0   | (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)                      | 149809         | 149809         |                          | Item #1 appears to be the same unique identifier. Check for drop.     |
-| 1   | (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)                     | 149809         | 149809         |                          | Item #2 appears to be the same unique identifier. check for drop.     |
-| 2   | (SUBJECT_GENDER, SEX)                                      | 149809         | 3              | nominal                  |
-| 3   | (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION)   | 149807         | 38360          | #NAME? (47) + OTHERS (9) | Street names mentioned twice, with 00 and without.                    |
-| 4   | (LOCATION_DISTRICT, DIST)                                  | 149809         | 24             |                          | Has entry OTHER (25). Entries appear of different, non related types. |
-| 5   | (LOCATION_DISTRICT.1, DIST_ID)                             | 149809         | 24             | nominal                  | Compare with #4. Value counts correspond with each other.             |
-| 6   | (INCIDENT_DATE, FIO_DATE)                                  | 149809         | 2140           | ordinal                  |
-| 7   | (SUBJECT_DETAILS, PRIORS)                                  | 129251         | 3              | nominal                  |
-| 8   | (SUBJECT_RACE, DESCRIPTION)                                | 149809         | 8              | nominal                  |
-| 9   | (SUBJECT_DETAILS.1, CLOTHING)                              | 136603         | 102127         | nominal                  |
-| 10  | (SUBJECT_DETAILS.2, COMPLEXION)                            | 149809         | 10             | nominal                  |
-| 11  | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)                           | 149809         | 26             | nominal                  |
-| 12  | (UNKNOWN_FIELD_TYPE, TERRORISM)                            | 149809         | 2              | nominal                  |
-| 13  | (SEARCH_CONDUCTED, SEARCH)                                 | 20344          | 3              | nominal                  |
-| 14  | (SEARCH_REASON, BASIS)                                     | 34976          | 3              | ordinal                  |
-| 15  | (INCIDENT_REASON, STOP_REASONS)                            | 103566         | 6              |                          | check if where "other" a column exists with specification             |
-| 16  | (INCIDENT_REASON.1, FIOFS_REASONS)                         | 149809         | 222            |                          |
-| 17  | (DISPOSITION, OUTCOME)                                     | 141042         | 7              |                          |
-| 18  | (VEHICLE_MAKE, VEH_MAKE)                                   | 139573         | 47             | nominal                  |
-| 19  | (VEHICLE_YEAR, VEH_YEAR_NUM)                               | 149628         | 51             | numerical                |
-| 20  | (VEHICLE_COLOR, VEH_COLOR)                                 | 139188         | 16             | nominal                  |
-| 21  | (VEHICLE_MODEL, VEH_MODEL)                                 | 38354          | 2006           | nominal                  |
-| 22  | (VEHICLE_DETAILS, VEH_OCCUPANT)                            | 39360          | 2              | nominal                  |
-| 23  | (VEHICLE_DETAILS.1, VEH_STATE)                             | 149809         | 48             | nominal                  |
-| 24  | (OFFICER_SUPERVISOR, SUPERVISOR_ID)                        | 133702         | 219            | nominal                  |
-| 25  | (OFFICER_ID, OFFICER_ID)                                   | 149809         | 1793           |                          |                                                                       |
-| 26  | (OFFICER_ASSIGNMENT, OFF_DIST_ID)                          | 149809         | 26             |                          | Check with #27. Appears related.                                      |
-| 27  | (OFFICER_ASSIGNMENT.1, OFF_DIST)                           | 149809         | 26             |                          | Same value names as #4. Plus additional.                              |
-| 28  | (OFFICER_ETHNICITY, ETHNICITY)                             | 23772          | 1101           | Unknown (10)             | Requires cleaning, due to misspelling and other slight differences.   |
-| 29  | (OFFICER_AGE, AGE_AT_FIO_CORRECTED)                        | 149809         | 119            | -1 (3689)                | Contains implausible numbers like: 0 (202), >120 (27)                 |
-| 30  | (LOCATION_STREET_NUMBER, STREET_ID)                        | 149809         | 3155           |                          | Check and compare with #3.                                            |
-| 31  | (LOCATION_CITY, CITY)                                      | 149809         | 23             | NO DATA ENTERED (683530) | Has entry OTHER (14595).                                              |
+| #   | Column                                                     | Non-Null Count | Unique_Values  | n/a placeholder  | Needs processing          | Suspected correlation |
+|-----|------------------------------------------------------------|----------------|----------------|------------------|---------------------------|-----------------------|
+| 0   | (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)                      | 149809         | 149809         |                  | no                        | #1                    |
+| 1   | (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)                     | 149809         | 149809         |                  | no                        | #0                    |
+| 2   | (SUBJECT_GENDER, SEX)                                      | 149809         | 3              | (UNKOWN)         | RP                        |                       |
+| 3   | (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION)   | 149807         | 38360          | (UNKNOWN, OTHER) | STR. NO & INTERSEC        | #30                   | 
+| 4   | (LOCATION_DISTRICT, DIST)                                  | 149809         | 24             |                  | no                        | #5 / #26 & #27        |
+| 5   | (LOCATION_DISTRICT.1, DIST_ID)                             | 149809         | 24             |                  | no                        | #4 / #26 & #27        |
+| 6   | (INCIDENT_DATE, FIO_DATE)                                  | 149809         | 2140           | Unplaus. dates   | RNP, remove hours         |                       |
+| 7   | (SUBJECT_DETAILS, PRIORS)                                  | 129251         | 3              | (UNKNOWN)        | no                        |                       |
+| 8   | (SUBJECT_RACE, DESCRIPTION)                                | 149809         | 8              | NO DATA ENTERED  | RP                        |                       |
+| 9   | (SUBJECT_DETAILS.1, CLOTHING)                              | 136603         | 102127         | (UNKNOWN)        | Naming                    |                       |
+| 10  | (SUBJECT_DETAILS.2, COMPLEXION)                            | 149809         | 10             | NO DATA ENTERED  | RP                        |                       |
+| 11  | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)                           | 149809         | 26             |                  | separate in options       | #17                   |
+| 12  | (UNKNOWN_FIELD_TYPE, TERRORISM)                            | 149809         | 2              |                  | no                        |                       |
+| 13  | (SEARCH_CONDUCTED, SEARCH)                                 | 20344          | 3              |                  | no                        |                       |
+| 14  | (SEARCH_REASON, BASIS)                                     | 34976          | 3              |                  | no                        |                       |
+| 15  | (INCIDENT_REASON, STOP_REASONS)                            | 103566         | 6              |                  | no                        |                       |
+| 16  | (INCIDENT_REASON.1, FIOFS_REASONS)                         | 149809         | 222            |                  | separate                  |                       |
+| 17  | (DISPOSITION, OUTCOME)                                     | 141042         | 7              |                  | separate                  | #11                   |
+| 18  | (VEHICLE_MAKE, VEH_MAKE)                                   | 139573         | 47             | (NO DATA ENTERED)| (RP)                      |                       |
+| 19  | (VEHICLE_YEAR, VEH_YEAR_NUM)                               | 149628         | 51             | 0, Unplaus. dates| (RP)                      |                       |                        
+| 20  | (VEHICLE_COLOR, VEH_COLOR)                                 | 139188         | 16             | (NO DATA ENTERED)| (RP)                      |                       |
+| 21  | (VEHICLE_MODEL, VEH_MODEL)                                 | 38354          | 2006           |                  | Naming                    |                       |
+| 22  | (VEHICLE_DETAILS, VEH_OCCUPANT)                            | 39360          | 2              |                  |                           |                       |
+| 23  | (VEHICLE_DETAILS.1, VEH_STATE)                             | 149809         | 48             | (NO DATA ENTERED)|                           |                       |
+| 24  | (OFFICER_SUPERVISOR, SUPERVISOR_ID)                        | 133702         | 219            | (1)              | (RP)                      |                       |
+| 25  | (OFFICER_ID, OFFICER_ID)                                   | 149809         | 1793           | (1)              |                           |                       |
+| 26  | (OFFICER_ASSIGNMENT, OFF_DIST_ID)                          | 149809         | 26             |                  |                           | #27 / #4 & #5         |
+| 27  | (OFFICER_ASSIGNMENT.1, OFF_DIST)                           | 149809         | 26             |                  |                           | #26 / #4 & #5         |
+| 28  | (OFFICER_ETHNICITY, ETHNICITY)                             | 23772          | 1101           | non              | RP, Naming                |                       | 
+| 29  | (OFFICER_AGE, AGE_AT_FIO_CORRECTED)                        | 149809         | 119            | Unplaus. dates   | RNP                       |                       | 
+| 30  | (LOCATION_STREET_NUMBER, STREET_ID)                        | 149809         | 3155           |                  |                           | #3                    |
+| 31  | (LOCATION_CITY, CITY)                                      | 149809         | 23             | NO DATA ENTERED  | RP                        |                       |
 
+RNP: Remove not plausible       \
+RP: Replace Placeholder         \
+
+### Feature value cleaning
+
+#### Features with no changes
+(INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)   \
+(INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)  \
+
+
+#### Features with cahnges
+- (SUBJECT_GENDER, SEX)
+    - Replace UNKNWON with NA-value
+        - 231 data points are influenced
+        - The sex of a subject should be known. It can be assumed that the entry is missing.
+- 
+
+
+#### Need more processing
+- (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION)
+    - can maybe be dropped because of other street information
 
 ### Imputing and dropping
 
@@ -219,6 +240,9 @@ According to the histogram, the lowest filling grade lies between 65% and 70%, m
 
 # Agenda - Feature analysis
 Step:
+5. Apply feature encoding
+Methods
+    - One hot encoding
 
 3. Apply different impute methods for the features with missing values
 
@@ -245,9 +269,7 @@ Methods
     - standardization (variance scaling)
     - robust scaling
 
-5. Apply feature encoding
-Methods
-    - One hot encoding
+
 
 6. Apply feature generation
 Methods

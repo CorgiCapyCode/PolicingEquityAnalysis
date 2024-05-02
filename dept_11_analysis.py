@@ -1,7 +1,7 @@
 import pandas as pd
 
 from dept_11_analysis.data_pre_filtering import redundant_feature_filtering, delete_duplicated_data_points
-from dept_11_analysis.data_cleaning import data_imputing, feature_value_cleaning
+from dept_11_analysis.data_cleaning import feature_value_cleaning
 from standard_functions import save_df_to_csv
 
 def read_csv_file(path) -> pd.DataFrame:
@@ -17,10 +17,22 @@ def dept_11_analysis_main():
     # general_df_info(df)
 
     redundant_feature_filtering(df=df, show_results=show_results)
-    
+
     delete_duplicated_data_points(df=df, show_results=show_results)
     
-    feature_value_cleaning(df=df, show_results=show_results)
+    feature_value_modification_list = [
+        (("SUBJECT_GENDER", "SEX"), [("UNKNOWN", pd.NA)]),
+        
+    ]
+    
+    df = feature_value_cleaning(
+        df=df,
+        threshold=threshold_to_drop,
+        feature_value_modification=feature_value_modification_list,
+        show_results=show_results
+    )
+    
+    save_df_to_csv(df=df, output_filename="test.csv")
     
     # data_imputing(df=df, threshold=threshold_to_drop, show_results=True)
 
