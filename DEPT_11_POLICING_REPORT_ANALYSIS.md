@@ -228,7 +228,7 @@ RP: Replace Placeholder         \
         - Reduced the number of unique values to 35698 (-2662)
     - Sort intersections alphabetically
         - Some intersections are written as STREET_A at STREET_B or STREET_B at STREET_A. Since this is the same location, the intersection streets will be sorted alphabetically.
-        Reduced the number of unique values to 33223 (-2475 / -5137)
+        Reduced the number of unique values to 33221 (-2477 / -5139)
 - (INCIDENT_DATE, FIO_DATE)
     - Remove time
         - All entries have a time stamp of 00:00. So this information will be removed to reduce the complexity.
@@ -238,6 +238,15 @@ RP: Replace Placeholder         \
 - (SUBJECT_RACE, DESCRIPTION)
     - Replace NO DATA ENTERED with NA-value
         - The item "UNKNWON" was kept, since it is possible that some subjects could not be categorized.
+- (SUBJECT_DETAILS.1, CLOTHING)
+    - Transform all to upper cases
+    - Adjust color names (BLK = BLACK, WHT = WHITE, GRY = GREY, BLU = BLUE, GRN = GREEN, BRN = BROWN, DRK = DARK, WHTE = WHITE)
+    - Adjust clothing names (JCK = JKT = JACKET, SHT = SHIRT, SWTSHT = SWEATSHIRT, JNS = JEANS, HOODY = HOODIE)
+    - Adjust naming for T-Shirt (T SHIRT = T-SHIRT, TSHIRT = T-SHIRT)
+    - Remove "."
+    - Replace "/" with ", "
+    - Remove "CLOTHING"
+
 
 
 

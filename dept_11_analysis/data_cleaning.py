@@ -1,8 +1,6 @@
 from typing import Tuple
 import pandas as pd
 import matplotlib.pyplot as plt
-from tqdm import tqdm
-from datetime import datetime
 
 
 def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value_modification: list =[], show_results: bool =False):
@@ -15,8 +13,9 @@ def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value
         df = simple_data_preprocessing(df=df, feature_name=feature_name, value_modification=modification)
 
     # complex modification: specific for a feature   
-    # modify_location_full_street(df=df)
-    # modify_date_and_time_entries(df=df)
+    modify_location_full_street(df=df)
+    modify_date_and_time(df=df)
+    modify_clothing(df=df)
     
 
     new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
@@ -74,75 +73,53 @@ def fill_missing_with_na(df: pd.DataFrame):
 
 # endregion
 # region 2-Complex operations
-def modify_location_full_street(df: pd.DataFrame):
-    progress_bar_location_street = tqdm(total=len(df), desc="Adjusting Intersections: ", unit="entries")
-    feature_name = ("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION")
-    for i, entry in df[feature_name].items():
-        entry = str(entry)
-        if " at " in entry:
-            entry = modify_intersection_street_numbers(entry=entry)
-            entry = sort_intersection_names(entry=entry)
-        df.loc[i, feature_name] = entry.strip()
-        progress_bar_location_street.update(1)
-    progress_bar_location_street.close()
+def modify_location_full_street(df: pd.DataFrame) -> pd.DataFrame:
+    feature_name = ("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION")    
+    
+    df[feature_name] = df[feature_name].str.lstrip()
+    df[feature_name] = df[feature_name].apply(modify_intersection_numbers)
+    df[feature_name] = df[feature_name].str.lstrip()
+    df[feature_name] = df[feature_name].apply(sort_intersection_names)
 
 
-def modify_intersection_street_numbers(entry: str) -> str:
-    if entry[0].isdigit():
-        for i, character in enumerate(entry):
-            if not character.isdigit():
-                entry = entry[i:]
-                break
+def modify_intersection_numbers(entry: str):
+    if pd.isna(entry):
+        return ""
+    if " at " in entry:
+        if entry[0].isdigit():
+            for i, character in enumerate(entry):
+                if not character.isdigit():
+                    entry = entry[i:]
+                    break
     return entry
 
 
 def sort_intersection_names(entry: str) -> str:
-    parts = entry.split(" at ")
-    stripped_parts = [part.strip() for part in parts]
-    sorted_parts = sorted(stripped_parts)
-    sorted_entry = " at ".join(sorted_parts)
-    return sorted_entry
+    if pd.isna(entry):
+        return ""
+    if " at " in entry:
+        street_split = entry.split(" at ")
+        stripped_streets = [street.strip() for street in street_split]
+        sorted_streets = sorted(stripped_streets)
+        entry = " at ".join(sorted_streets)
+    return entry
 
 
-def modify_date_and_time_entries(df: pd.DataFrame):
-    progress_bar_date_and_time = tqdm(total=len(df), desc="Processing date and time: ", unit="entries")
+def modify_date_and_time(df: pd.DataFrame):
     feature_name = ("INCIDENT_DATE", "FIO_DATE")
+    df[feature_name] = df[feature_name].str.replace(" 0:00", "")
+
+    df[feature_name] = pd.to_datetime(df[feature_name], errors="coerce", format="%m/%d/%y")
+    start_date = pd.to_datetime("2011-01-01")
+    end_date = pd.to_datetime("2015-12-31")
     
-    for i, entry in df[feature_name].items():
-        entry = str(entry)
-        entry = clear_unplausible_dates(entry=entry)
-        if entry is not pd.NA:
-            entry = remove_time_from_date(entry=entry)
-        df.loc[i, feature_name] = entry
-        
-        progress_bar_date_and_time.update(1)
-            
-    progress_bar_date_and_time.close()
+    df.loc[(df[feature_name] < start_date) | (df[feature_name] > end_date), feature_name] = pd.NA
 
 
-def clear_unplausible_dates(entry: str) -> str:
-    date = datetime.strptime(entry, "%m/%d/%y %H:%M")
-    if 2011 <= date.year <= 2015:
-        return entry
-    else:
-        return pd.NA
-
-def remove_time_from_date(entry: str) -> str:
-    date_parts = entry.split()
-    date = date_parts[0]
-    return date
-
-
-
-
-
-
-
-
-
-
-
-
+def modify_clothing(df: pd.DataFrame):
+    feature_name = ("SUBJECT_DETAILS.1", "CLOTHING")
+    df[feature_name] = df[feature_name].str.replace("blk", "black")
+    # WIP
 
 # endregion
 # region 3-Show details
