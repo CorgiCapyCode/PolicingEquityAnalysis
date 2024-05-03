@@ -2,6 +2,7 @@ from typing import Tuple
 import pandas as pd
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from datetime import datetime
 
 
 def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value_modification: list =[], show_results: bool =False):
@@ -11,21 +12,21 @@ def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value
 
     # simple standard modification: replace a value with another one
     for feature_name, modification in feature_value_modification:
-        df = data_preprocessing(df=df, feature_name=feature_name, value_modification=modification)
+        df = simple_data_preprocessing(df=df, feature_name=feature_name, value_modification=modification)
 
     # complex modification: specific for a feature   
-    modify_location_full_street(df=df)
-    
-    
-    
+    # modify_location_full_street(df=df)
+    # modify_date_and_time_entries(df=df)
     
 
-
-    # Last step!!!
-    # fill_missing_with_na(df=df)
     new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
     print(new_num_unique_values)
     
+    
+    
+    
+    # Last step!!!
+    # fill_missing_with_na(df=df)    
 
     if show_results:       
         print(f"Dropped data points because of missing input: {number_of_dropped_data_points}")
@@ -39,24 +40,13 @@ def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value
     
     return df
 
-
-def data_preprocessing(df: pd.DataFrame, feature_name: str, value_modification: list) -> pd.DataFrame:
-    for orginal_value, target_value in value_modification:
-        # df[feature_name].replace(orginal_value, target_value, inplace=True)
-        df[feature_name] = df[feature_name].replace(orginal_value,target_value)
-    return df
-
-
+# region 1-Simple operations
 def drop_not_filled_data(df: pd.DataFrame, threshold: float) -> int:
     data_completion_perc = df.notna().mean(axis=1) * 100
     data_to_drop = data_completion_perc <= threshold
     number_of_data_to_be_dropped = data_to_drop.sum()
     df.drop(df[data_to_drop].index, inplace=True)
     return number_of_data_to_be_dropped, data_completion_perc
-  
-
-def fill_missing_with_na(df: pd.DataFrame):
-    df.fillna(value=pd.NA, inplace=True)
 
 
 def get_unique_value_df_for_features(df: pd.DataFrame) -> Tuple[dict, dict]:
@@ -73,32 +63,17 @@ def get_unique_value_df_for_features(df: pd.DataFrame) -> Tuple[dict, dict]:
     return unique_value_counts, num_unique_values_dict
 
 
-def modify_intersection_street_numbers(entry: str): #(df: pd.DataFrame, feature_name: str):
-    # if " at " in entry and entry[0].isdigt():
-    if entry[0].isdigit():
-        for i, character in enumerate(entry):
-            if not character.isdigit():
-                entry = entry[i:]
-                break
-    return entry
-    '''
-    progress_bar_street_numbers = tqdm(total=len(df), desc="Processing st. no. removal from intersections.", unit="entries")
-    for i, entry in df[feature_name].items():
-        entry = df.loc[i, feature_name]
-        entry = str(entry)
-        if " at " in entry and entry[0].isdigit():
-            for j, character in enumerate(entry):
-                if not character.isdigit():
-                    #df.loc[i, feature_name] = entry[j:]
-                    entry = entry[j:]
-                    break
-        df.loc[i, feature_name] = entry.strip()
-        progress_bar_street_numbers.update(1)
-    
-    progress_bar_street_numbers.close()
-    '''
+def simple_data_preprocessing(df: pd.DataFrame, feature_name: str, value_modification: list) -> pd.DataFrame:
+    for orginal_value, target_value in value_modification:
+        df[feature_name] = df[feature_name].replace(orginal_value,target_value)
+    return df  
 
 
+def fill_missing_with_na(df: pd.DataFrame):
+    df.fillna(value=pd.NA, inplace=True)
+
+# endregion
+# region 2-Complex operations
 def modify_location_full_street(df: pd.DataFrame):
     progress_bar_location_street = tqdm(total=len(df), desc="Adjusting Intersections: ", unit="entries")
     feature_name = ("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION")
@@ -110,34 +85,71 @@ def modify_location_full_street(df: pd.DataFrame):
         df.loc[i, feature_name] = entry.strip()
         progress_bar_location_street.update(1)
     progress_bar_location_street.close()
-    
-    #modify_intersection_street_numbers(df=df, feature_name=("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION"))
-    #sort_intersection_names(df=df, feature_name=("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION"))
 
 
-def save_dataframes_to_csv(dict_with_df: dict):
-    for column, dataframe in dict_with_df.items():
-        dataframe.to_csv(f"dept_11_analysis/data_files/{column}_unique_values.csv")
+def modify_intersection_street_numbers(entry: str) -> str:
+    if entry[0].isdigit():
+        for i, character in enumerate(entry):
+            if not character.isdigit():
+                entry = entry[i:]
+                break
+    return entry
 
 
-def sort_intersection_names(entry: str): # (df: pd.DataFrame, feature_name: str):
+def sort_intersection_names(entry: str) -> str:
     parts = entry.split(" at ")
     stripped_parts = [part.strip() for part in parts]
     sorted_parts = sorted(stripped_parts)
     sorted_entry = " at ".join(sorted_parts)
     return sorted_entry
+
+
+def modify_date_and_time_entries(df: pd.DataFrame):
+    progress_bar_date_and_time = tqdm(total=len(df), desc="Processing date and time: ", unit="entries")
+    feature_name = ("INCIDENT_DATE", "FIO_DATE")
     
-    '''
-    progress_bar_intersection_sort = tqdm(total=len(df), desc="Sorting intersection streets.", unit="entries")
     for i, entry in df[feature_name].items():
-        if " at " in entry:
-            parts = entry.split(" at ")
-            sorted_parts = sorted(parts)
-            sorted_entry = " at ".join(sorted_parts)
-            df.loc[i, feature_name] = sorted_entry
-        progress_bar_intersection_sort.update(1)
-    progress_bar_intersection_sort.close()
-    '''
+        entry = str(entry)
+        entry = clear_unplausible_dates(entry=entry)
+        if entry is not pd.NA:
+            entry = remove_time_from_date(entry=entry)
+        df.loc[i, feature_name] = entry
+        
+        progress_bar_date_and_time.update(1)
+            
+    progress_bar_date_and_time.close()
+
+
+def clear_unplausible_dates(entry: str) -> str:
+    date = datetime.strptime(entry, "%m/%d/%y %H:%M")
+    if 2011 <= date.year <= 2015:
+        return entry
+    else:
+        return pd.NA
+
+def remove_time_from_date(entry: str) -> str:
+    date_parts = entry.split()
+    date = date_parts[0]
+    return date
+
+
+
+
+
+
+
+
+
+
+
+
+
+# endregion
+# region 3-Show details
+def save_dataframes_to_csv(dict_with_df: dict):
+    for column, dataframe in dict_with_df.items():
+        dataframe.to_csv(f"dept_11_analysis/data_files/{column}_unique_values.csv")
+
 
 def plot_histogram_for_dp_completness(dp_completness: pd.Series):
     plt.hist(dp_completness, bins=100, edgecolor="black")
@@ -145,3 +157,5 @@ def plot_histogram_for_dp_completness(dp_completness: pd.Series):
     plt.ylabel("Frequency")
     plt.title("Filling Grade Distribution")
     plt.savefig("dept_11_analysis/histogram_data_completness.jpg")
+
+# endregion

@@ -214,6 +214,7 @@ RP: Replace Placeholder         \
 (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)  \
 (LOCATION_DISTRICT, DIST)               \
 (LOCATION_DISTRICT.1, DIST_ID)          \
+(SUBJECT_DETAILS, PRIORS)               \
 
 
 #### Features with cahnges
@@ -233,7 +234,12 @@ RP: Replace Placeholder         \
         - All entries have a time stamp of 00:00. So this information will be removed to reduce the complexity.
     - Clear unplausible dates.
         - The report states the data from 2011 to 2015. All other dates will be replaced with pd.NA (and later imputed)
-        
+        - 1417 dates have been removed.
+- (SUBJECT_RACE, DESCRIPTION)
+    - Replace NO DATA ENTERED with NA-value
+        - The item "UNKNWON" was kept, since it is possible that some subjects could not be categorized.
+
+
 
 ### Imputing and dropping
 

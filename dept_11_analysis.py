@@ -22,7 +22,7 @@ def dept_11_analysis_main():
     
     simple_feature_value_modification_list = [
         (("SUBJECT_GENDER", "SEX"), [("UNKNOWN", pd.NA)]),
-        
+        (("SUBJECT_RACE", "DESCRIPTION"), [("NO DATA ENTERED", pd.NA)])     
     ]
     # complex_feature_value_modification_list = [
     #    ("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION")             
@@ -36,6 +36,8 @@ def dept_11_analysis_main():
         show_results=show_results
     )
     
+    
+    df.info()
     save_df_to_csv(df=df, output_filename="test.csv")
     
     # data_imputing(df=df, threshold=threshold_to_drop, show_results=True)
