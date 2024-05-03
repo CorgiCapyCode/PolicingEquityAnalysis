@@ -272,7 +272,7 @@ RP: Replace Placeholder         \
     - Remove NO DATA ENTERED values
     - This influences 68353 values.
 
-### Vehicle related features
+#### Vehicle related features
 - The state is the only feature without missing entries (empty), but includes 99.456 NO DATA ENTERED and 10673 OTHER values.
     - Some other vehicle related features show entries (e.g. "make" with 717 entries)
 - The same applies for the other features, although occupant and model have no NO DATA ENTERED entries, but much more missing entries.
@@ -285,15 +285,12 @@ RP: Replace Placeholder         \
     - The remaining differences are often based on a single entry (in the original unique entry list 90% of the values have less than 10 entries).
     - A further processing is not conducted for this project.
 
+#### Dropping data points
+For dropping data points a threshold of 30% is set. All data points having less than 30% non-NaN values will be dropped.
+This applies to 0 data points. 
 
-### Imputing and dropping
+## Imputing
 
-MISSING: FIRST CHECK A LIST OF UNIQUE VALUES --> NO DATA, 0 etc. have to be replaced with pd.NA.
-
-needed to be done after feature cleaning: 
-The threshold for completed data was set to 30%. Meaning that all data points below 30% completed will be dropped. \
-This applies to 0 data points.
-According to the histogram, the lowest filling grade lies between 65% and 70%, most of the data have around 85% filling.
 
 
 

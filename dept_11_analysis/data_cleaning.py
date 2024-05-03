@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value_modification: list =[], show_results: bool =False):
     
-    number_of_dropped_data_points, data_completion_perc = drop_not_filled_data(df=df, threshold=threshold)
+
     original_unique_value_counts, num_unique_values = get_unique_value_df_for_features(df=df)
 
     # simple standard modification: replace a value with another one
@@ -18,9 +18,10 @@ def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value
     modify_clothing(df=df)
     modify_vehicle_features(df=df)
     
-    fill_missing_with_na(df=df)    
-    new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
-    
+    fill_missing_with_na(df=df)
+    number_of_dropped_data_points, data_completion_perc = drop_not_filled_data(df=df, threshold=threshold)
+       
+    new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df) 
 
     if show_results:       
         print(f"Dropped data points because of missing input: {number_of_dropped_data_points}")
