@@ -64,7 +64,7 @@ def get_unique_value_df_for_features(df: pd.DataFrame) -> Tuple[dict, dict]:
 
 def simple_data_preprocessing(df: pd.DataFrame, feature_name: str, value_modification: list) -> pd.DataFrame:
     for orginal_value, target_value in value_modification:
-        df[feature_name] = df[feature_name].replace(orginal_value,target_value)
+        df[feature_name] = df[feature_name].replace(orginal_value, target_value)
     return df  
 
 
@@ -118,8 +118,81 @@ def modify_date_and_time(df: pd.DataFrame):
 
 def modify_clothing(df: pd.DataFrame):
     feature_name = ("SUBJECT_DETAILS.1", "CLOTHING")
-    df[feature_name] = df[feature_name].str.replace("blk", "black")
+    df[feature_name] = df[feature_name].str.lstrip()
+    
+    df[feature_name] = df[feature_name].apply(adjust_signs_in_clothing)
+    
+    df[feature_name] = df[feature_name].apply(writte_all_in_upper_case)
+    
+    df[feature_name] = df[feature_name].apply(adjust_color_naming_for_clothing)
+    
+    df[feature_name] = df[feature_name].apply(adjust_cloths_naming_for_clothing)
+
     # WIP
+
+def adjust_signs_in_clothing(entry: str) -> str:
+    if pd.isna(entry):
+        return ""
+    
+    sings_correction = {
+        "/": ", ",
+        ".": "",
+        ";": "",       
+    }
+    for original_value, corrected_value in sings_correction.items():
+        if original_value in entry:
+            entry = entry.replace(original_value, corrected_value)    
+
+    return entry
+
+def writte_all_in_upper_case(entry: str) -> str:
+    if pd.isna(entry):
+        return ""
+    return entry.upper()
+
+def adjust_color_naming_for_clothing(entry: str) -> str:
+    if pd.isna(entry):
+        return ""
+    
+    color_correction = {
+        "BLK": "BLACK",
+        "WHT": "WHITE",
+        "GRY": "GREY",
+        "BLU": "BLUE",
+        "BRN": "BROWN",
+        "DRK": "DARK",
+        "WHTE": "WHITE",
+        "GRN": "GREEN",
+        "BLUEE": "BLUE"
+    }
+    for original_value, corrected_value in color_correction.items():
+        if original_value in entry:
+            entry = entry.replace(original_value, corrected_value)
+    return entry
+
+def adjust_cloths_naming_for_clothing(entry: str) -> str:
+    if pd.isna(entry):
+        return ""
+    
+    cloths_correction = {
+        "JCK": "JACKET",
+        "JKT": "JACKET",
+        "SHT": "SHIRT",
+        "SWTSHT": "SWEATSHIRT",
+        "JNS": "JEANS",
+        "HOODY": "HOODIE",
+        "TSHIRT": "T-SHIRT",
+        "SWEAT-SHIRT": "SWEATSHIRT",
+        "SNKRS": "SNEAKERS",
+        "T SHIRT": "T-SHIRT",
+        "SWEAT SHIRT": "SWEATSHIRT"
+        
+    }
+    for original_value, corrected_value in cloths_correction.items():
+        if original_value in entry:
+            entry = entry.replace(original_value, corrected_value)
+    return entry    
+    
 
 # endregion
 # region 3-Show details

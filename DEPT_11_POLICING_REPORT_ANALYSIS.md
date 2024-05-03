@@ -215,6 +215,14 @@ RP: Replace Placeholder         \
 (LOCATION_DISTRICT, DIST)               \
 (LOCATION_DISTRICT.1, DIST_ID)          \
 (SUBJECT_DETAILS, PRIORS)               \
+(UNKNOWN_FIELD_TYPE, FIOFS_TYPE)        \
+(UNKNOWN_FIELD_TYPE, TERRORISM)         \
+(SEARCH_CONDUCTED, SEARCH)              \
+(SEARCH_REASON, BASIS)                  \
+(INCIDENT_REASON, STOP_REASONS)         \
+(INCIDENT_REASON.1, FIOFS_REASONS)      \
+(DISPOSITION, OUTCOME)                  \
+
 
 
 #### Features with cahnges
@@ -245,8 +253,20 @@ RP: Replace Placeholder         \
     - Adjust naming for T-Shirt (T SHIRT = T-SHIRT, TSHIRT = T-SHIRT)
     - Remove "."
     - Replace "/" with ", "
-    - Remove "CLOTHING"
+        - All replacements (+ additional ones) reduced the unique values to 86148
+    - The column remains difficult to evalute. Specific characteristics can be extracted, such as in general "BLACK" clothes. Refining the feature more or using it as it is right now, does not make sense.
+- (SUBJECT_DETAILS.2, COMPLEXION)
+    - Remove NO DATA ENTERED
+        - 22510 entries are affacted
 
+
+### Comment on vehicle related features
+- The state is the only feature without missing entries (empty), but includes 99.456 NO DATA ENTERED.
+    - Some other vehicle related features show entries (e.g. make with 717 entries)
+- The same applies for the other features, although occupant and model have no NO DATA ENTERED entries, but much more missing entries.
+- As assumption:
+    - Data points where all vehicle related features miss data (NO DATA ENTERED, 0, ""), no vehicle was involved. These fields will be filled with "NO VEHICLE INVOLVED".
+    - Data points where at least one vehicle feature, will be counted as vehicle involved. Here the other missing features will be imputed later.
 
 
 

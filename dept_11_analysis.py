@@ -22,12 +22,14 @@ def dept_11_analysis_main():
     
     simple_feature_value_modification_list = [
         (("SUBJECT_GENDER", "SEX"), [("UNKNOWN", pd.NA)]),
-        (("SUBJECT_RACE", "DESCRIPTION"), [("NO DATA ENTERED", pd.NA)])     
+        (("SUBJECT_RACE", "DESCRIPTION"), [("NO DATA ENTERED", pd.NA)]),
+        (("SUBJECT_DETAILS.2", "COMPLEXION"), [("NO DATA ENTERED", pd.NA)]),
     ]
     # complex_feature_value_modification_list = [
     #    ("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION")
     #    ("INCIDENT_DATE", "FIO_DATE")
     #    ("SUBJECT_DETAILS.1", "CLOTHING")
+    #    ("VEHICLE_MAKE", "VEH_MAKE") and other vehicle related features
     # ]
     # see data_cleaning for complex feature value modification
     
