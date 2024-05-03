@@ -195,7 +195,7 @@ Using the unique values incl. counts per feature results in:
 | 21  | (VEHICLE_MODEL, VEH_MODEL)                                 | 38354          | 2006           |                  | Naming                    |                       |
 | 22  | (VEHICLE_DETAILS, VEH_OCCUPANT)                            | 39360          | 2              |                  |                           |                       |
 | 23  | (VEHICLE_DETAILS.1, VEH_STATE)                             | 149809         | 48             | (NO DATA ENTERED)|                           |                       |
-| 24  | (OFFICER_SUPERVISOR, SUPERVISOR_ID)                        | 133702         | 219            | (1)              | (RP)                      |                       |
+| 24  | (OFFICER_SUPERVISOR, SUPERVISOR_ID)                        | 133702         | 219            | 1                | RP                        |                       |
 | 25  | (OFFICER_ID, OFFICER_ID)                                   | 149809         | 1793           | (1)              |                           |                       |
 | 26  | (OFFICER_ASSIGNMENT, OFF_DIST_ID)                          | 149809         | 26             |                  |                           | #27 / #4 & #5         |
 | 27  | (OFFICER_ASSIGNMENT.1, OFF_DIST)                           | 149809         | 26             |                  |                           | #26 / #4 & #5         |
@@ -222,10 +222,13 @@ RP: Replace Placeholder         \
 (INCIDENT_REASON, STOP_REASONS)         \
 (INCIDENT_REASON.1, FIOFS_REASONS)      \
 (DISPOSITION, OUTCOME)                  \
+(OFFICER_ASSIGNMENT, OFF_DIST_ID)       \
+(OFFICER_ASSIGNMENT.1, OFF_DIST)        \
+(LOCATION_STREET_NUMBER, STREET_ID)     \
 
 
 
-#### Features with cahnges
+#### Modified features
 - (SUBJECT_GENDER, SEX)
     - Replace UNKNWON with NA-value
         - 231 data points are influenced
@@ -258,16 +261,29 @@ RP: Replace Placeholder         \
 - (SUBJECT_DETAILS.2, COMPLEXION)
     - Remove NO DATA ENTERED
         - 22510 entries are affacted
+- (OFFICER_SUPERVISOR, SUPERVISOR_ID) & (OFFICER_ID, OFFICER_ID)
+    - Remove all "1"
+        - Since all other IDs are much larger numbers, it can be assumed that the 1 and 2 stand for "UNKNOWN"/"MISSING DATA" etc.
+        - This replacement affects 532 values for the supervisor and 685 for the officer id.
+- (OFFICER_AGE, AGE_AT_FIO_CORRECTED)
+    - The age range lies in between -1 and 243. A threshold will be set between 1 and 120.
+    - 
+- (LOCATION_CITY, CITY)
+    - Remove NO DATA ENTERED values
+    - This influences 68353 values.
 
-
-### Comment on vehicle related features
-- The state is the only feature without missing entries (empty), but includes 99.456 NO DATA ENTERED.
-    - Some other vehicle related features show entries (e.g. make with 717 entries)
+### Vehicle related features
+- The state is the only feature without missing entries (empty), but includes 99.456 NO DATA ENTERED and 10673 OTHER values.
+    - Some other vehicle related features show entries (e.g. "make" with 717 entries)
 - The same applies for the other features, although occupant and model have no NO DATA ENTERED entries, but much more missing entries.
 - As assumption:
     - Data points where all vehicle related features miss data (NO DATA ENTERED, 0, ""), no vehicle was involved. These fields will be filled with "NO VEHICLE INVOLVED".
     - Data points where at least one vehicle feature, will be counted as vehicle involved. Here the other missing features will be imputed later.
-
+    - This assumption relates in 103670 entries where no vehicle was involved.
+- VEH_MODEL receives further adjustments to the values.
+    - Writting all in upper case and removing "." etc. reduced the unique values to around 1500.
+    - The remaining differences are often based on a single entry (in the original unique entry list 90% of the values have less than 10 entries).
+    - A further processing is not conducted for this project.
 
 
 ### Imputing and dropping

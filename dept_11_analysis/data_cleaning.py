@@ -16,26 +16,20 @@ def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value
     modify_location_full_street(df=df)
     modify_date_and_time(df=df)
     modify_clothing(df=df)
+    modify_vehicle_features(df=df)
     
-
+    fill_missing_with_na(df=df)    
     new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
-    print(new_num_unique_values)
     
-    
-    
-    
-    # Last step!!!
-    # fill_missing_with_na(df=df)    
 
     if show_results:       
         print(f"Dropped data points because of missing input: {number_of_dropped_data_points}")
         plot_histogram_for_dp_completness(dp_completness=data_completion_perc)
         print("Histrogram for data completness saved.") 
-        
-        save_dataframes_to_csv(dict_with_df=original_unique_value_counts, name="_original_unique_values")
+        save_dataframes_to_csv(dict_with_df=original_unique_value_counts, name="_original_unique_values", sub_directory_name="original_unique_value_lists")        
         print("Number of unique values:")
         print(num_unique_values)
-        # save_dataframes_to_csv(dict_with_df=new_unique_value_counts, name="_new_unique_values")
+        save_dataframes_to_csv(dict_with_df=new_unique_value_counts, name="_new_unique_values", sub_directory_name="new_unique_value_lists")
     
     return df
 
@@ -120,7 +114,7 @@ def modify_clothing(df: pd.DataFrame):
     feature_name = ("SUBJECT_DETAILS.1", "CLOTHING")
     df[feature_name] = df[feature_name].str.lstrip()
     
-    df[feature_name] = df[feature_name].apply(adjust_signs_in_clothing)
+    df[feature_name] = df[feature_name].apply(remove_signs)
     
     df[feature_name] = df[feature_name].apply(writte_all_in_upper_case)
     
@@ -128,9 +122,8 @@ def modify_clothing(df: pd.DataFrame):
     
     df[feature_name] = df[feature_name].apply(adjust_cloths_naming_for_clothing)
 
-    # WIP
 
-def adjust_signs_in_clothing(entry: str) -> str:
+def remove_signs(entry: str) -> str:
     if pd.isna(entry):
         return ""
     
@@ -145,10 +138,12 @@ def adjust_signs_in_clothing(entry: str) -> str:
 
     return entry
 
+
 def writte_all_in_upper_case(entry: str) -> str:
     if pd.isna(entry):
         return ""
     return entry.upper()
+
 
 def adjust_color_naming_for_clothing(entry: str) -> str:
     if pd.isna(entry):
@@ -169,6 +164,7 @@ def adjust_color_naming_for_clothing(entry: str) -> str:
         if original_value in entry:
             entry = entry.replace(original_value, corrected_value)
     return entry
+
 
 def adjust_cloths_naming_for_clothing(entry: str) -> str:
     if pd.isna(entry):
@@ -192,13 +188,48 @@ def adjust_cloths_naming_for_clothing(entry: str) -> str:
         if original_value in entry:
             entry = entry.replace(original_value, corrected_value)
     return entry    
+
+
+def modify_vehicle_features(df: pd.DataFrame):
+    vehicle_related_columns = [
+        ("VEHICLE_DETAILS.1", "VEH_STATE"),
+        ("VEHICLE_COLOR", "VEH_COLOR"),
+        ("VEHICLE_YEAR", "VEH_YEAR_NUM"),
+        ("VEHICLE_MAKE", "VEH_MAKE"),
+        ("VEHICLE_DETAILS", "VEH_OCCUPANT"),
+        ("VEHICLE_MODEL", "VEH_MODEL")
+    ]
+    all_empty__data_points = df[vehicle_related_columns].isna().all(axis=1)
+    df.loc[all_empty__data_points, vehicle_related_columns] = "NO VEHICLE INVOLVED"
     
+    
+    df[("VEHICLE_MODEL", "VEH_MODEL")] = df[("VEHICLE_MODEL", "VEH_MODEL")].apply(writte_all_in_upper_case)
+    df[("VEHICLE_MODEL", "VEH_MODEL")] = df[("VEHICLE_MODEL", "VEH_MODEL")].apply(remove_signs)
+    # df[("VEHICLE_MODEL", "VEH_MODEL")] = df[("VEHICLE_MODEL", "VEH_MODEL")].apply(adjust_vehicle_model)
+    
+    # Vehicle Model needs further processing --> see function like for cloths
+
+
+def adjust_vehicle_model(entry: str) -> str:
+    if pd.isna(entry):
+        return ""
+    
+    door_numbers = {
+        "4": "4 ",
+        " DR": " DOOR",
+        "  ": " "
+    }
+    for original_value, corrected_value in door_numbers.items():
+        if original_value in entry:
+            entry = entry.replace(original_value, corrected_value)    
+    
+    return entry
 
 # endregion
 # region 3-Show details
-def save_dataframes_to_csv(dict_with_df: dict):
+def save_dataframes_to_csv(dict_with_df: dict, name: str, sub_directory_name: str):
     for column, dataframe in dict_with_df.items():
-        dataframe.to_csv(f"dept_11_analysis/data_files/{column}_unique_values.csv")
+        dataframe.to_csv(f"dept_11_analysis/data_files/{sub_directory_name}/{column}{name}.csv")
 
 
 def plot_histogram_for_dp_completness(dp_completness: pd.Series):

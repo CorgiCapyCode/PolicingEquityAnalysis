@@ -24,12 +24,20 @@ def dept_11_analysis_main():
         (("SUBJECT_GENDER", "SEX"), [("UNKNOWN", pd.NA)]),
         (("SUBJECT_RACE", "DESCRIPTION"), [("NO DATA ENTERED", pd.NA)]),
         (("SUBJECT_DETAILS.2", "COMPLEXION"), [("NO DATA ENTERED", pd.NA)]),
+        (("VEHICLE_MAKE", "VEH_MAKE"), [("NO DATA ENTERED", pd.NA)]),
+        (("VEHICLE_YEAR", "VEH_YEAR_NUM"), [(0, pd.NA), (2016, pd.NA), (2020, pd.NA), (2017, pd.NA)]),
+        (("VEHICLE_COLOR", "VEH_COLOR"), [("NO DATA ENTERED", pd.NA)]),
+        (("VEHICLE_DETAILS.1", "VEH_STATE"), [("NO DATA ENTERED", pd.NA), ("OTHER", pd.NA)]),
+        (("OFFICER_SUPERVISOR", "SUPERVISOR_ID"), [(1, pd.NA)]),
+        (("OFFICER_ID", "OFFICER_ID"), [(1, pd.NA), (2, pd.NA)]),
+        (("LOCATION_CITY", "CITY"), [("NO DATA ENTERED", pd.NA)])     
     ]
     # complex_feature_value_modification_list = [
     #    ("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION")
     #    ("INCIDENT_DATE", "FIO_DATE")
     #    ("SUBJECT_DETAILS.1", "CLOTHING")
     #    ("VEHICLE_MAKE", "VEH_MAKE") and other vehicle related features
+    #    ("OFFICER_AGE", "AGE_AT_FIO_CORRECTED")
     # ]
     # see data_cleaning for complex feature value modification
     
