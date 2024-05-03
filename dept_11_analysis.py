@@ -20,15 +20,19 @@ def dept_11_analysis_main():
 
     delete_duplicated_data_points(df=df, show_results=show_results)
     
-    feature_value_modification_list = [
+    simple_feature_value_modification_list = [
         (("SUBJECT_GENDER", "SEX"), [("UNKNOWN", pd.NA)]),
         
     ]
+    # complex_feature_value_modification_list = [
+    #    ("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION")             
+    # ]
+    # see data_cleaning for complex feature value modification
     
     df = feature_value_cleaning(
         df=df,
         threshold=threshold_to_drop,
-        feature_value_modification=feature_value_modification_list,
+        feature_value_modification=simple_feature_value_modification_list,
         show_results=show_results
     )
     

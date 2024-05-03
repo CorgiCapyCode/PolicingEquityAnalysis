@@ -212,6 +212,8 @@ RP: Replace Placeholder         \
 #### Features with no changes
 (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)   \
 (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)  \
+(LOCATION_DISTRICT, DIST)               \
+(LOCATION_DISTRICT.1, DIST_ID)          \
 
 
 #### Features with cahnges
@@ -219,12 +221,19 @@ RP: Replace Placeholder         \
     - Replace UNKNWON with NA-value
         - 231 data points are influenced
         - The sex of a subject should be known. It can be assumed that the entry is missing.
-- 
-
-
-#### Need more processing
 - (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION)
-    - can maybe be dropped because of other street information
+    - Remove street numbers from intersections
+        - Some intersections have street numbers included, while others not. Since the intersection already contains an exact location, the numbers will be removed.
+        - Reduced the number of unique values to 35698 (-2662)
+    - Sort intersections alphabetically
+        - Some intersections are written as STREET_A at STREET_B or STREET_B at STREET_A. Since this is the same location, the intersection streets will be sorted alphabetically.
+        Reduced the number of unique values to 33223 (-2475 / -5137)
+- (INCIDENT_DATE, FIO_DATE)
+    - Remove time
+        - All entries have a time stamp of 00:00. So this information will be removed to reduce the complexity.
+    - Clear unplausible dates.
+        - The report states the data from 2011 to 2015. All other dates will be replaced with pd.NA (and later imputed)
+        
 
 ### Imputing and dropping
 
