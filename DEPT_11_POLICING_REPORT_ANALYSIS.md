@@ -267,6 +267,8 @@ RP: Replace Placeholder         \
     - The age range lies in between -1 and 243. A threshold will be set between 6 and 120.
 - (LOCATION_CITY, CITY)
     - Remove NO DATA ENTERED values
+- (OFFICER_ETHNICITY, ETHNICITY)
+
 
 #### Vehicle related features
 - The state is the only feature without missing entries (empty), but includes 99.456 NO DATA ENTERED and 10673 OTHER values.
@@ -297,6 +299,11 @@ there are still many variations fo writing. Furthermore it contains different de
 E.g. some mention only the number of doors, while others add the type (Sedan etc.).                                                                                 \
 Cleaning this feature is beyond the scope of this project.
 
+Using the Chi^2 test for the feature numbers #4 and #5 as well as for #26 and #27 show that both pairs are highly correlated with each other.   \
+The test results show that all 4 columns are highly related with each other (p-value ~0.0). Three of them will be dropped:                      \
+(LOCATION_DISTRICT, DIST), (LOCATION_DISTRICT.1, DIST_ID), (OFFICER_ASSIGNMENT.1, OFF_DIST)
+
+After the 2nd iteration for feature filtering, 25 features remain in the dataset.
 
 ## Imputing
 

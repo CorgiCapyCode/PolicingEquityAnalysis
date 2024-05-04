@@ -55,6 +55,9 @@ def dept_11_analysis_main():
         feature_value_modification=simple_feature_value_modification_list,
         show_results=show_results
     )
+    
+    
+    
     if show_results:
         num_complete_data_points = df.dropna().shape[0]
         print(f"Number of data points with no missing data: {num_complete_data_points}")
@@ -65,7 +68,7 @@ def dept_11_analysis_main():
     # endregion
     
     # region - Feature Filtering - 2nd iteration
-    further_feature_filtering(df=df)
+    further_feature_filtering(df=df, show_results=show_results)
     
     # endregion
     
@@ -79,3 +82,4 @@ def dept_11_analysis_main():
 if __name__ == "__main__":
     dept_11_analysis_main()
     print("Finished process")
+    

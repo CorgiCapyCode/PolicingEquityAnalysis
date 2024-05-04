@@ -27,7 +27,12 @@ def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value
        
     new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
 
-    if show_results:       
+    if show_results:
+        print("")
+        print("*******************")
+        print("Results from data_cleaning.py")
+        print("*******************")
+        print("")   
         print(f"Dropped data points because of missing input: {number_of_dropped_data_points}")
         plot_histogram_for_dp_completness(dp_completness=data_completion_perc)
         print("Histrogram for data completness saved.") 
@@ -128,7 +133,6 @@ def modify_clothing(df: pd.DataFrame):
     df[feature_name] = df[feature_name].apply(adjust_cloths_naming_for_clothing)
     
 
-
 def remove_signs(entry: str) -> str:
     if pd.isna(entry):
         return pd.NA
@@ -164,7 +168,9 @@ def adjust_color_naming_for_clothing(entry: str) -> str:
         "DRK": "DARK",
         "WHTE": "WHITE",
         "GRN": "GREEN",
-        "BLUEE": "BLUE"
+        "BLUEE": "BLUE",
+        "BKL" : "BLACK",
+        "B LUE": "BLUE",
     }
     for original_value, corrected_value in color_correction.items():
         if original_value in entry:

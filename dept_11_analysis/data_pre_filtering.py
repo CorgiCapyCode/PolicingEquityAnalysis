@@ -14,6 +14,11 @@ def redundant_feature_filtering(df: pd.DataFrame, show_results: bool =False):
     redundant_features = filter_for_redundant_features(df)
     delete_feature(df=df, redundant_feature_list=redundant_features)
     if show_results:
+        print("")
+        print("*******************")
+        print("Results from data_pre_filtering.py")
+        print("*******************")
+        print("")
         print("Redundant feature pairs:")
         print(redundant_features)
         print("Dataframe after removing features:")
