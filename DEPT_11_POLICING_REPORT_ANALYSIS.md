@@ -5,7 +5,8 @@ Location: Boston
 FIO: Field Interrogation and Observation (source: https://data.boston.gov/dataset/boston-police-department-fio)
 
 - Program to make interaction between Boston Police Department (BPD) and subjects transparent.
-- BPD provides a description for the FIO columns, in belows table the subtitles. The description can be found: https://data.boston.gov/dataset/boston-police-department-fio/resource/1e5f1bc5-a0b4-4dce-ae1c-7c01ab3364f6?inner_span=True
+- BPD provides a description for the FIO columns, in belows table the subtitles. \
+  The description can be found: https://data.boston.gov/dataset/boston-police-department-fio/resource/1e5f1bc5-a0b4-4dce-ae1c-7c01ab3364f6?inner_span=True
 
 ## Features explaination
 
@@ -103,7 +104,10 @@ Data columns (total 34 columns):            \
 dtypes: float64(2), int64(7), object(25) \
 memory usage: 39.5+ MB
 
-## Data pre-filtering
+## Feature and Data Pre-Filtering
+
+Before starting a deeper analysis, the data will be pre-filtered by removing duplicants.
+This is easy to implement and reduces some complexity.
 
 ### Redundant Features
 
@@ -111,14 +115,15 @@ Based on the description it was suspected that some features may contain redunda
 
 The feature comparison results in following feature pairs being identical:
 
-('INCIDENT_DATE', 'FIO_DATE') & ('INCIDENT_TIME', 'FIO_TIME')   \
+('INCIDENT_DATE', 'FIO_DATE') & ('INCIDENT_TIME', 'FIO_TIME')    \
 ('SUBJECT_RACE', 'DESCRIPTION') &  ('OFFICER_RACE', 'RACE_DESC')
 
 The second feature of both pairs (FIO_TIME and RACE_DESC) will be deleted.
 
 ### Duplicanted Data Points
 
-The data points are checked for duplicants, while ignoring the first two columns, since they are unique identifiers (the first identifier is system generated and thus always different even for the the same case). \
+The data points are checked for duplicants, while ignoring the first two columns, \
+since they are unique identifiers (the first identifier is system generated and thus always different even for the the same case). \
 By comparing all remaining 30 features, 2421 duplicants where found and removed from the dataset. \
 The remaining number of data points is at this point: 149,809.
 
@@ -144,7 +149,7 @@ Nominal feature: feature without any order
 | 11  | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)                           | 149809         | object  | nominal          |
 | 12  | (UNKNOWN_FIELD_TYPE, TERRORISM)                            | 149809         | object  | nominal          |
 | 13  | (SEARCH_CONDUCTED, SEARCH)                                 | 20344          | object  | nominal          |
-| 14  | (SEARCH_REASON, BASIS)                                     | 34976          | object  | ordinal          |
+| 14  | (SEARCH_REASON, BASIS)                                     | 34976          | object  | nominal          |
 | 15  | (INCIDENT_REASON, STOP_REASONS)                            | 103566         | object  | nominal          |
 | 16  | (INCIDENT_REASON.1, FIOFS_REASONS)                         | 149809         | object  | nominal          |
 | 17  | (DISPOSITION, OUTCOME)                                     | 141042         | object  | nominal          |
@@ -190,7 +195,7 @@ Using the unique values incl. counts per feature results in:
 | 16  | (INCIDENT_REASON.1, FIOFS_REASONS)                         | 149809         | 222            |                  | separate                  |                       |
 | 17  | (DISPOSITION, OUTCOME)                                     | 141042         | 7              |                  | separate                  | #11                   |
 | 18  | (VEHICLE_MAKE, VEH_MAKE)                                   | 139573         | 47             | (NO DATA ENTERED)| (RP)                      |                       |
-| 19  | (VEHICLE_YEAR, VEH_YEAR_NUM)                               | 149628         | 51             | 0, Unplaus. dates| (RP)                      |                       |                        
+| 19  | (VEHICLE_YEAR, VEH_YEAR_NUM)                               | 149628         | 51             | 0, Unplaus. dates| (RP)                      |                       |
 | 20  | (VEHICLE_COLOR, VEH_COLOR)                                 | 139188         | 16             | (NO DATA ENTERED)| (RP)                      |                       |
 | 21  | (VEHICLE_MODEL, VEH_MODEL)                                 | 38354          | 2006           |                  | Naming                    |                       |
 | 22  | (VEHICLE_DETAILS, VEH_OCCUPANT)                            | 39360          | 2              |                  |                           |                       |
@@ -200,7 +205,7 @@ Using the unique values incl. counts per feature results in:
 | 26  | (OFFICER_ASSIGNMENT, OFF_DIST_ID)                          | 149809         | 26             |                  |                           | #27 / #4 & #5         |
 | 27  | (OFFICER_ASSIGNMENT.1, OFF_DIST)                           | 149809         | 26             |                  |                           | #26 / #4 & #5         |
 | 28  | (OFFICER_ETHNICITY, ETHNICITY)                             | 23772          | 1101           | non              | RP, Naming                |                       | 
-| 29  | (OFFICER_AGE, AGE_AT_FIO_CORRECTED)                        | 149809         | 119            | Unplaus. dates   | RNP                       |                       | 
+| 29  | (OFFICER_AGE, AGE_AT_FIO_CORRECTED)                        | 149809         | 119            | Unplaus. dates   | RNP                       |                       |
 | 30  | (LOCATION_STREET_NUMBER, STREET_ID)                        | 149809         | 3155           |                  |                           | #3                    |
 | 31  | (LOCATION_CITY, CITY)                                      | 149809         | 23             | NO DATA ENTERED  | RP                        |                       |
 
@@ -231,24 +236,20 @@ RP: Replace Placeholder         \
 #### Modified features
 - (SUBJECT_GENDER, SEX)
     - Replace UNKNWON with NA-value
-        - 231 data points are influenced
-        - The sex of a subject should be known. It can be assumed that the entry is missing.
+    - The sex of a subject should be known. It can be assumed that the entry is missing.
 - (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION)
     - Remove street numbers from intersections
-        - Some intersections have street numbers included, while others not. Since the intersection already contains an exact location, the numbers will be removed.
-        - Reduced the number of unique values to 35698 (-2662)
+    - Some intersections have street numbers included, while others not. Since the intersection already contains an exact location, the numbers will be removed.
     - Sort intersections alphabetically
-        - Some intersections are written as STREET_A at STREET_B or STREET_B at STREET_A. Since this is the same location, the intersection streets will be sorted alphabetically.
-        Reduced the number of unique values to 33221 (-2477 / -5139)
+    - Some intersections are written as STREET_A at STREET_B or STREET_B at STREET_A. Since this is the same location, the intersection streets will be sorted alphabetically.
 - (INCIDENT_DATE, FIO_DATE)
     - Remove time
-        - All entries have a time stamp of 00:00. So this information will be removed to reduce the complexity.
+    - All entries have a time stamp of 00:00. So this information will be removed to reduce the complexity.
     - Clear unplausible dates.
-        - The report states the data from 2011 to 2015. All other dates will be replaced with pd.NA (and later imputed)
-        - 1417 dates have been removed.
+    - The report states the data from 2011 to 2015. All other dates will be replaced with pd.NA (and later imputed)
 - (SUBJECT_RACE, DESCRIPTION)
     - Replace NO DATA ENTERED with NA-value
-        - The item "UNKNWON" was kept, since it is possible that some subjects could not be categorized.
+    - The item "UNKNWON" was kept, since it is possible that some subjects could not be categorized.
 - (SUBJECT_DETAILS.1, CLOTHING)
     - Transform all to upper cases
     - Adjust color names (BLK = BLACK, WHT = WHITE, GRY = GREY, BLU = BLUE, GRN = GREEN, BRN = BROWN, DRK = DARK, WHTE = WHITE)
@@ -256,25 +257,20 @@ RP: Replace Placeholder         \
     - Adjust naming for T-Shirt (T SHIRT = T-SHIRT, TSHIRT = T-SHIRT)
     - Remove "."
     - Replace "/" with ", "
-        - All replacements (+ additional ones) reduced the unique values to 86148
     - The column remains difficult to evalute. Specific characteristics can be extracted, such as in general "BLACK" clothes. Refining the feature more or using it as it is right now, does not make sense.
 - (SUBJECT_DETAILS.2, COMPLEXION)
     - Remove NO DATA ENTERED
-        - 22510 entries are affacted
 - (OFFICER_SUPERVISOR, SUPERVISOR_ID) & (OFFICER_ID, OFFICER_ID)
     - Remove all "1"
-        - Since all other IDs are much larger numbers, it can be assumed that the 1 and 2 stand for "UNKNOWN"/"MISSING DATA" etc.
-        - This replacement affects 532 values for the supervisor and 685 for the officer id.
+    - Since all other IDs are much larger numbers, it can be assumed that the 1 and 2 stand for "UNKNOWN"/"MISSING DATA" etc.
 - (OFFICER_AGE, AGE_AT_FIO_CORRECTED)
-    - The age range lies in between -1 and 243. A threshold will be set between 1 and 120.
-    - 
+    - The age range lies in between -1 and 243. A threshold will be set between 6 and 120.
 - (LOCATION_CITY, CITY)
     - Remove NO DATA ENTERED values
-    - This influences 68353 values.
 
 #### Vehicle related features
 - The state is the only feature without missing entries (empty), but includes 99.456 NO DATA ENTERED and 10673 OTHER values.
-    - Some other vehicle related features show entries (e.g. "make" with 717 entries)
+- Some other vehicle related features show entries (e.g. "make" with 717 entries)
 - The same applies for the other features, although occupant and model have no NO DATA ENTERED entries, but much more missing entries.
 - As assumption:
     - Data points where all vehicle related features miss data (NO DATA ENTERED, 0, ""), no vehicle was involved. These fields will be filled with "NO VEHICLE INVOLVED".
@@ -288,6 +284,100 @@ RP: Replace Placeholder         \
 #### Dropping data points
 For dropping data points a threshold of 30% is set. All data points having less than 30% non-NaN values will be dropped.
 This applies to 0 data points. 
+
+
+## Feature Filtering - 2nd iteration
+Since there are currently two unique identifiers present, the second one will be dropped ((INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)).
+
+Although the feature (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION) contains slightly more information than (LOCATION_STREET_NUMBER, STREET_ID),  \
+it will be dropped. After filtering it still contains around 33,000 unique values in contrast to the 3155 unique values from the street id.
+
+The feature (VEHICLE_MODEL, VEH_MODEL) will be dropped as well, due to its high complexity. Although after processing it has less unique values than e.g. the date, \
+there are still many variations fo writing. Furthermore it contains different depth of information.                                                                 \
+E.g. some mention only the number of doors, while others add the type (Sedan etc.).                                                                                 \
+Cleaning this feature is beyond the scope of this project.
+
+
+## Imputing
+
+After data cleaning, only 1027 data points are completed. All other data points have at leas one feature missing.
+Taking into acoount that some features still have a large number of unique values, imputing methods that require a prior conducted one-hot-encoding are not suitable.
+Even not considering the unique identifiers, the clothing and vehicle models, the total number of variants is >10.000. 
+
+| #   | Column                                                     | Non-Null Count | Imputing Method   | Reason           |
+|-----|------------------------------------------------------------|----------------|-------------------|------------------|
+| 0   | (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)                      | 149809         | NN                | NMD              |
+| 1   | (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)                     | 149809         | NN                | NMD              |
+| 2   | (SUBJECT_GENDER, SEX)                                      | 149578         | 3              | (UNKOWN)         |
+| 3   | (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION)   | 149807         | 38360          | (UNKNOWN, OTHER) | 
+| 4   | (LOCATION_DISTRICT, DIST)                                  | 149809         | 24             |                  |
+| 5   | (LOCATION_DISTRICT.1, DIST_ID)                             | 149809         | 24             |                  |
+| 6   | (INCIDENT_DATE, FIO_DATE)                                  | 148392         | 2140           | Unplaus. dates   |
+| 7   | (SUBJECT_DETAILS, PRIORS)                                  | 129251         | 3              | (UNKNOWN)        |
+| 8   | (SUBJECT_RACE, DESCRIPTION)                                | 143852         | 8              | NO DATA ENTERED  |
+| 9   | (SUBJECT_DETAILS.1, CLOTHING)                              | 136603         | 102127         | (UNKNOWN)        |
+| 10  | (SUBJECT_DETAILS.2, COMPLEXION)                            | 127299         | 10             | NO DATA ENTERED  |
+| 11  | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)                           | 149809         | 26             |                  |
+| 12  | (UNKNOWN_FIELD_TYPE, TERRORISM)                            | 149809         | 2              |                  |
+| 13  | (SEARCH_CONDUCTED, SEARCH)                                 | 20344          | 3              |                  |
+| 14  | (SEARCH_REASON, BASIS)                                     | 34976          | 3              |                  |
+| 15  | (INCIDENT_REASON, STOP_REASONS)                            | 103566         | 6              |                  |
+| 16  | (INCIDENT_REASON.1, FIOFS_REASONS)                         | 149809         | 222            |                  |
+| 17  | (DISPOSITION, OUTCOME)                                     | 141042         | 7              |                  |
+| 18  | (VEHICLE_MAKE, VEH_MAKE)                                   | 144591         | 47             | (NO DATA ENTERED)|
+| 19  | (VEHICLE_YEAR, VEH_YEAR_NUM)                               | 137858         | 51             | 0, Unplaus. dates|
+| 20  | (VEHICLE_COLOR, VEH_COLOR)                                 | 143402         | 16             | (NO DATA ENTERED)|
+| 21  | (VEHICLE_MODEL, VEH_MODEL)                                 | 142024         | 2006           |                  |
+| 22  | (VEHICLE_DETAILS, VEH_OCCUPANT)                            | 143030         | 2              |                  |
+| 23  | (VEHICLE_DETAILS.1, VEH_STATE)                             | 145090         | 48             | (NO DATA ENTERED)|
+| 24  | (OFFICER_SUPERVISOR, SUPERVISOR_ID)                        | 133170         | 219            | 1                |
+| 25  | (OFFICER_ID, OFFICER_ID)                                   | 149124         | 1793           | (1)              |
+| 26  | (OFFICER_ASSIGNMENT, OFF_DIST_ID)                          | 149809         | 26             |                  |
+| 27  | (OFFICER_ASSIGNMENT.1, OFF_DIST)                           | 149809         | 26             |                  |
+| 28  | (OFFICER_ETHNICITY, ETHNICITY)                             | 23772          | 1101           | non              |
+| 29  | (OFFICER_AGE, AGE_AT_FIO_CORRECTED)                        | 149809         | 119            | Unplaus. dates   |
+| 30  | (LOCATION_STREET_NUMBER, STREET_ID)                        | 149809         | 3155           |                  |
+| 31  | (LOCATION_CITY, CITY)                                      | 81456          | 23             | NO DATA ENTERED  |
+
+NN: Not Needed          \
+NMD: No Missing Data    \
+
+## Feature Encoding and Information Extraction
+
+| #   | Column                                                     | Encoding Method  | Reason           |
+|-----|------------------------------------------------------------|------------------|------------------|
+| 0   | (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)                      |
+| 1   | (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)                     |
+| 2   | (SUBJECT_GENDER, SEX)                                      |
+| 3   | (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION)   |
+| 4   | (LOCATION_DISTRICT, DIST)                                  |
+| 5   | (LOCATION_DISTRICT.1, DIST_ID)                             |
+| 6   | (INCIDENT_DATE, FIO_DATE)                                  |
+| 7   | (SUBJECT_DETAILS, PRIORS)                                  |
+| 8   | (SUBJECT_RACE, DESCRIPTION)                                |
+| 9   | (SUBJECT_DETAILS.1, CLOTHING)                              |
+| 10  | (SUBJECT_DETAILS.2, COMPLEXION)                            |
+| 11  | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)                           |
+| 12  | (UNKNOWN_FIELD_TYPE, TERRORISM)                            |
+| 13  | (SEARCH_CONDUCTED, SEARCH)                                 |
+| 14  | (SEARCH_REASON, BASIS)                                     |
+| 15  | (INCIDENT_REASON, STOP_REASONS)                            |
+| 16  | (INCIDENT_REASON.1, FIOFS_REASONS)                         |
+| 17  | (DISPOSITION, OUTCOME)                                     |
+| 18  | (VEHICLE_MAKE, VEH_MAKE)                                   |
+| 19  | (VEHICLE_YEAR, VEH_YEAR_NUM)                               |
+| 20  | (VEHICLE_COLOR, VEH_COLOR)                                 |
+| 21  | (VEHICLE_MODEL, VEH_MODEL)                                 |
+| 22  | (VEHICLE_DETAILS, VEH_OCCUPANT)                            |
+| 23  | (VEHICLE_DETAILS.1, VEH_STATE)                             |
+| 24  | (OFFICER_SUPERVISOR, SUPERVISOR_ID)                        |
+| 25  | (OFFICER_ID, OFFICER_ID)                                   |
+| 26  | (OFFICER_ASSIGNMENT, OFF_DIST_ID)                          |
+| 27  | (OFFICER_ASSIGNMENT.1, OFF_DIST)                           |
+| 28  | (OFFICER_ETHNICITY, ETHNICITY)                             |
+| 29  | (OFFICER_AGE, AGE_AT_FIO_CORRECTED)                        |
+| 30  | (LOCATION_STREET_NUMBER, STREET_ID)                        |
+| 31  | (LOCATION_CITY, CITY)                                      |
 
 ## Imputing
 

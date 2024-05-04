@@ -2,6 +2,10 @@ import pandas as pd
 
 from dept_11_analysis.data_pre_filtering import redundant_feature_filtering, delete_duplicated_data_points
 from dept_11_analysis.data_cleaning import feature_value_cleaning
+from dept_11_analysis.feature_filtering_2 import further_feature_filtering
+
+
+from dept_11_analysis.data_imputing import data_imputing
 from standard_functions import save_df_to_csv
 
 def read_csv_file(path) -> pd.DataFrame:
@@ -16,9 +20,12 @@ def dept_11_analysis_main():
     df = read_csv_file(path)
     # general_df_info(df)
 
+    # region - Feature and Data Pre-Filtering
     redundant_feature_filtering(df=df, show_results=show_results)
-
     delete_duplicated_data_points(df=df, show_results=show_results)
+    
+    # endregion
+    # region - Data Cleaning
     
     simple_feature_value_modification_list = [
         (("SUBJECT_GENDER", "SEX"), [("UNKNOWN", pd.NA)]),
@@ -32,6 +39,7 @@ def dept_11_analysis_main():
         (("OFFICER_ID", "OFFICER_ID"), [(1, pd.NA), (2, pd.NA)]),
         (("LOCATION_CITY", "CITY"), [("NO DATA ENTERED", pd.NA)])     
     ]
+    
     # complex_feature_value_modification_list = [
     #    ("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION")
     #    ("INCIDENT_DATE", "FIO_DATE")
@@ -47,20 +55,26 @@ def dept_11_analysis_main():
         feature_value_modification=simple_feature_value_modification_list,
         show_results=show_results
     )
+    if show_results:
+        num_complete_data_points = df.dropna().shape[0]
+        print(f"Number of data points with no missing data: {num_complete_data_points}")
+        df_complete_values = df.dropna(how="all")
+        save_df_to_csv(df=df_complete_values, output_filename="dept_11_analysis/data_files/only_complete_after_cleaning.csv")
+        save_df_to_csv(df=df, output_filename="dept_11_analysis/data_files/after_data_cleaning.csv")
+    
+    # endregion
+    
+    # region - Feature Filtering - 2nd iteration
+    further_feature_filtering(df=df)
+    
+    # endregion
     
     
-    df.info()
+    df = data_imputing(df=df)
+    
+    
     save_df_to_csv(df=df, output_filename="test.csv")
-    
-    # data_imputing(df=df, threshold=threshold_to_drop, show_results=True)
-
-    
-    #print("Final df.info:")
-    #print(df.info())
-    #print("final df:")
-    #print(df)
-
-
+    df.info()
     
 if __name__ == "__main__":
     dept_11_analysis_main()

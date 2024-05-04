@@ -1,3 +1,6 @@
+# Module containg all functions for Data Cleaning
+# See: DEPT_11_POLICING_REPORT_ANALYSIS
+
 from typing import Tuple
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -17,11 +20,12 @@ def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value
     modify_date_and_time(df=df)
     modify_clothing(df=df)
     modify_vehicle_features(df=df)
+    modfiy_ages(df=df)
     
     fill_missing_with_na(df=df)
     number_of_dropped_data_points, data_completion_perc = drop_not_filled_data(df=df, threshold=threshold)
        
-    new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df) 
+    new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
 
     if show_results:       
         print(f"Dropped data points because of missing input: {number_of_dropped_data_points}")
@@ -79,7 +83,7 @@ def modify_location_full_street(df: pd.DataFrame) -> pd.DataFrame:
 
 def modify_intersection_numbers(entry: str):
     if pd.isna(entry):
-        return ""
+        return pd.NA
     if " at " in entry:
         if entry[0].isdigit():
             for i, character in enumerate(entry):
@@ -91,7 +95,7 @@ def modify_intersection_numbers(entry: str):
 
 def sort_intersection_names(entry: str) -> str:
     if pd.isna(entry):
-        return ""
+        return pd.NA
     if " at " in entry:
         street_split = entry.split(" at ")
         stripped_streets = [street.strip() for street in street_split]
@@ -122,11 +126,12 @@ def modify_clothing(df: pd.DataFrame):
     df[feature_name] = df[feature_name].apply(adjust_color_naming_for_clothing)
     
     df[feature_name] = df[feature_name].apply(adjust_cloths_naming_for_clothing)
+    
 
 
 def remove_signs(entry: str) -> str:
     if pd.isna(entry):
-        return ""
+        return pd.NA
     
     sings_correction = {
         "/": ", ",
@@ -142,13 +147,13 @@ def remove_signs(entry: str) -> str:
 
 def writte_all_in_upper_case(entry: str) -> str:
     if pd.isna(entry):
-        return ""
+        return pd.NA
     return entry.upper()
 
 
 def adjust_color_naming_for_clothing(entry: str) -> str:
     if pd.isna(entry):
-        return ""
+        return pd.NA
     
     color_correction = {
         "BLK": "BLACK",
@@ -169,7 +174,7 @@ def adjust_color_naming_for_clothing(entry: str) -> str:
 
 def adjust_cloths_naming_for_clothing(entry: str) -> str:
     if pd.isna(entry):
-        return ""
+        return pd.NA
     
     cloths_correction = {
         "JCK": "JACKET",
@@ -208,12 +213,14 @@ def modify_vehicle_features(df: pd.DataFrame):
     df[("VEHICLE_MODEL", "VEH_MODEL")] = df[("VEHICLE_MODEL", "VEH_MODEL")].apply(remove_signs)
     # df[("VEHICLE_MODEL", "VEH_MODEL")] = df[("VEHICLE_MODEL", "VEH_MODEL")].apply(adjust_vehicle_model)
     
-    # Vehicle Model needs further processing --> see function like for cloths
+    # Vehicle model needs further processing 
+    # --> see DEPT_11_POLICING_REPORT_ANALYSIS.md 
+    # Chapter: Data Cleaning / Feature value Cleaning / Vehicle Related Features
 
 
 def adjust_vehicle_model(entry: str) -> str:
     if pd.isna(entry):
-        return ""
+        return pd.NA
     
     door_numbers = {
         "4": "4 ",
@@ -224,6 +231,20 @@ def adjust_vehicle_model(entry: str) -> str:
         if original_value in entry:
             entry = entry.replace(original_value, corrected_value)    
     
+    return entry
+
+
+def modfiy_ages(df: pd.DataFrame):
+    feature_name = ("OFFICER_AGE", "AGE_AT_FIO_CORRECTED")
+    df[feature_name] = df[feature_name].apply(filter_unplausible_ages)
+
+
+def filter_unplausible_ages(entry: str) -> str:
+    if pd.isna(entry):
+        return pd.NA
+    
+    if 6 >= entry >= 120:
+        entry = pd.NA
     return entry
 
 # endregion

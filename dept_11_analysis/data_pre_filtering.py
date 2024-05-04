@@ -1,3 +1,6 @@
+# Module containg all functions for Feature and Data Pre-Filtering
+# See: DEPT_11_POLICING_REPORT_ANALYSIS
+
 import pandas as pd
 
 
@@ -38,5 +41,3 @@ def delete_duplicated_data_points(df: pd.DataFrame, show_results: bool =False):
         print(f"{deleted_rows} data points have been deleted from the dataset.")
         print("Dataframe after removing duplicants:")
         print(df)
-
-
