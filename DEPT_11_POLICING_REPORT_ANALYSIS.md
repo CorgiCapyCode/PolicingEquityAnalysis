@@ -64,7 +64,7 @@ Source: https://data.boston.gov/dataset/boston-police-department-fio/resource/c6
 ## Feature General Information
 RangeIndex: 152230 entries, 0 to 152229     \
 Data columns (total 34 columns):            \
-| #   | Column                                                     | Non-Null Count | Dtype   |
+| #   | Feature                                                    | Non-Null Count | Dtype   |
 |-----|------------------------------------------------------------|----------------|---------|
 | 0   | (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)                      | 152230         | int64   |
 | 1   | (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)                     | 152230         | int64   |
@@ -133,7 +133,7 @@ Numerical feature: quantitative feature
 Ordinal feature: feature with a meaningful order
 Nominal feature: feature without any order
 
-| #   | Column                                                     | Non-Null Count | Dtype   | Feature category |
+| #   | Feature                                                    | Non-Null Count | Dtype   | Feature category |
 |-----|------------------------------------------------------------|----------------|---------|------------------|
 | 0   | (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)                      | 149809         | int64   | nominal          |
 | 1   | (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)                     | 149809         | int64   | nominal          |
@@ -174,7 +174,7 @@ Nominal feature: feature without any order
 
 Using the unique values incl. counts per feature results in:
 
-| #   | Column                                                     | Non-Null Count | Unique_Values  | n/a placeholder  | Needs processing          | Suspected correlation |
+| #   | Feature                                                    | Non-Null Count | Unique_Values  | n/a placeholder  | Needs processing          | Suspected correlation |
 |-----|------------------------------------------------------------|----------------|----------------|------------------|---------------------------|-----------------------|
 | 0   | (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)                      | 149809         | 149809         |                  | no                        | #1                    |
 | 1   | (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)                     | 149809         | 149809         |                  | no                        | #0                    |
@@ -225,7 +225,6 @@ RP: Replace Placeholder         \
 (SEARCH_CONDUCTED, SEARCH)              \
 (SEARCH_REASON, BASIS)                  \
 (INCIDENT_REASON, STOP_REASONS)         \
-(INCIDENT_REASON.1, FIOFS_REASONS)      \
 (DISPOSITION, OUTCOME)                  \
 (OFFICER_ASSIGNMENT, OFF_DIST_ID)       \
 (OFFICER_ASSIGNMENT.1, OFF_DIST)        \
@@ -268,7 +267,9 @@ RP: Replace Placeholder         \
 - (LOCATION_CITY, CITY)
     - Remove NO DATA ENTERED values
 - (OFFICER_ETHNICITY, ETHNICITY)
-
+    - Data is partwise not interpretable.
+- (INCIDENT_REASON.1, FIOFS_REASONS)
+    - Replace "INVESTIGATE" with "INVESTIGATION"
 
 #### Vehicle related features
 - The state is the only feature without missing entries (empty), but includes 99.456 NO DATA ENTERED and 10673 OTHER values.
@@ -301,94 +302,87 @@ Cleaning this feature is beyond the scope of this project.
 
 Using the Chi^2 test for the feature numbers #4 and #5 as well as for #26 and #27 show that both pairs are highly correlated with each other.   \
 The test results show that all 4 columns are highly related with each other (p-value ~0.0). Three of them will be dropped:                      \
-(LOCATION_DISTRICT, DIST), (LOCATION_DISTRICT.1, DIST_ID), (OFFICER_ASSIGNMENT.1, OFF_DIST)
+(LOCATION_DISTRICT, DIST), (LOCATION_DISTRICT.1, DIST_ID), (OFFICER_ASSIGNMENT.1, OFF_DIST).
 
-After the 2nd iteration for feature filtering, 25 features remain in the dataset.
+The feature (OFFICER_ETHNICITY, ETHNICITY) will be dropped, beacuse the data is not consistent and many abbriviations are not interpretable.
 
-## Imputing
+After the 2nd iteration for feature filtering, 24 features remain in the dataset.
+The new list of features including unique values is:
 
-After data cleaning, only 1027 data points are completed. All other data points have at leas one feature missing.
-Taking into acoount that some features still have a large number of unique values, imputing methods that require a prior conducted one-hot-encoding are not suitable.
-Even not considering the unique identifiers, the clothing and vehicle models, the total number of variants is >10.000. 
+| Feature                                          | Unique Values |
+|--------------------------------------------------|---------------|
+| (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)            | 149809        |
+| (SUBJECT_GENDER, SEX)                            | 2             |
+| (INCIDENT_DATE, FIO_DATE)                        | 1668          |
+| (SUBJECT_DETAILS, PRIORS)                        | 3             |
+| (SUBJECT_RACE, DESCRIPTION)                      | 7             |
+| (SUBJECT_DETAILS.2, COMPLEXION)                  | 9             |
+| (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)                 | 26            |
+| (UNKNOWN_FIELD_TYPE, TERRORISM)                  | 2             |
+| (SEARCH_CONDUCTED, SEARCH)                       | 3             |
+| (SEARCH_REASON, BASIS)                           | 3             |
+| (INCIDENT_REASON, STOP_REASONS)                  | 6             |
+| (INCIDENT_REASON.1, FIOFS_REASONS)               | 222           |
+| (DISPOSITION, OUTCOME)                           | 7             |
+| (VEHICLE_MAKE, VEH_MAKE)                         | 47            |
+| (VEHICLE_YEAR, VEH_YEAR_NUM)                     | 48            |
+| (VEHICLE_COLOR, VEH_COLOR)                       | 16            |
+| (VEHICLE_DETAILS, VEH_OCCUPANT)                  | 3             |
+| (VEHICLE_DETAILS.1, VEH_STATE)                   | 47            |
+| (OFFICER_SUPERVISOR, SUPERVISOR_ID)              | 218           |
+| (OFFICER_ID, OFFICER_ID)                         | 1791          |
+| (OFFICER_ASSIGNMENT, OFF_DIST_ID)                | 26            |
+| (OFFICER_AGE, AGE_AT_FIO_CORRECTED)              | 119           |
+| (LOCATION_STREET_NUMBER, STREET_ID)              | 3155          |
+| (LOCATION_CITY, CITY)                            | 22            |
 
-| #   | Column                                                     | Non-Null Count | Imputing Method   | Reason           |
-|-----|------------------------------------------------------------|----------------|-------------------|------------------|
-| 0   | (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)                      | 149809         | NN                | NMD              |
-| 1   | (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)                     | 149809         | NN                | NMD              |
-| 2   | (SUBJECT_GENDER, SEX)                                      | 149578         | 3              | (UNKOWN)         |
-| 3   | (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION)   | 149807         | 38360          | (UNKNOWN, OTHER) | 
-| 4   | (LOCATION_DISTRICT, DIST)                                  | 149809         | 24             |                  |
-| 5   | (LOCATION_DISTRICT.1, DIST_ID)                             | 149809         | 24             |                  |
-| 6   | (INCIDENT_DATE, FIO_DATE)                                  | 148392         | 2140           | Unplaus. dates   |
-| 7   | (SUBJECT_DETAILS, PRIORS)                                  | 129251         | 3              | (UNKNOWN)        |
-| 8   | (SUBJECT_RACE, DESCRIPTION)                                | 143852         | 8              | NO DATA ENTERED  |
-| 9   | (SUBJECT_DETAILS.1, CLOTHING)                              | 136603         | 102127         | (UNKNOWN)        |
-| 10  | (SUBJECT_DETAILS.2, COMPLEXION)                            | 127299         | 10             | NO DATA ENTERED  |
-| 11  | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)                           | 149809         | 26             |                  |
-| 12  | (UNKNOWN_FIELD_TYPE, TERRORISM)                            | 149809         | 2              |                  |
-| 13  | (SEARCH_CONDUCTED, SEARCH)                                 | 20344          | 3              |                  |
-| 14  | (SEARCH_REASON, BASIS)                                     | 34976          | 3              |                  |
-| 15  | (INCIDENT_REASON, STOP_REASONS)                            | 103566         | 6              |                  |
-| 16  | (INCIDENT_REASON.1, FIOFS_REASONS)                         | 149809         | 222            |                  |
-| 17  | (DISPOSITION, OUTCOME)                                     | 141042         | 7              |                  |
-| 18  | (VEHICLE_MAKE, VEH_MAKE)                                   | 144591         | 47             | (NO DATA ENTERED)|
-| 19  | (VEHICLE_YEAR, VEH_YEAR_NUM)                               | 137858         | 51             | 0, Unplaus. dates|
-| 20  | (VEHICLE_COLOR, VEH_COLOR)                                 | 143402         | 16             | (NO DATA ENTERED)|
-| 21  | (VEHICLE_MODEL, VEH_MODEL)                                 | 142024         | 2006           |                  |
-| 22  | (VEHICLE_DETAILS, VEH_OCCUPANT)                            | 143030         | 2              |                  |
-| 23  | (VEHICLE_DETAILS.1, VEH_STATE)                             | 145090         | 48             | (NO DATA ENTERED)|
-| 24  | (OFFICER_SUPERVISOR, SUPERVISOR_ID)                        | 133170         | 219            | 1                |
-| 25  | (OFFICER_ID, OFFICER_ID)                                   | 149124         | 1793           | (1)              |
-| 26  | (OFFICER_ASSIGNMENT, OFF_DIST_ID)                          | 149809         | 26             |                  |
-| 27  | (OFFICER_ASSIGNMENT.1, OFF_DIST)                           | 149809         | 26             |                  |
-| 28  | (OFFICER_ETHNICITY, ETHNICITY)                             | 23772          | 1101           | non              |
-| 29  | (OFFICER_AGE, AGE_AT_FIO_CORRECTED)                        | 149809         | 119            | Unplaus. dates   |
-| 30  | (LOCATION_STREET_NUMBER, STREET_ID)                        | 149809         | 3155           |                  |
-| 31  | (LOCATION_CITY, CITY)                                      | 81456          | 23             | NO DATA ENTERED  |
+## Imputation
+After cleaning and filtering the data 4820 data points are complete. All other data points miss at least one value.
 
-NN: Not Needed          \
-NMD: No Missing Data    \
+| Feature                                 | Non-Null Count | Dtype            | Imputing method | Description                                   |
+|-----------------------------------------|----------------|------------------|-----------------|-----------------------------------------------|
+| (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)   | 149809         | int64            | No missing data |                                               |
+| (SUBJECT_GENDER, SEX)                   | 149578         | object           | SPI             |                                               |
+| (INCIDENT_DATE, FIO_DATE)               | 148392         | datetime64[ns]   | SPI             |                                               |
+| (SUBJECT_DETAILS, PRIORS)               | 129251         | object           | SPI             |                                               |
+| (SUBJECT_RACE, DESCRIPTION)             | 143852         | object           | MBI -> SPI      | COMPLEXION                                    |
+| (SUBJECT_DETAILS.2, COMPLEXION)         | 127299         | object           | MBI -> SPI      | DESCRIPTION                                   |
+| (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)        | 149809         | object           | No missing data |                                               |
+| (UNKNOWN_FIELD_TYPE, TERRORISM)         | 149809         | object           | No missing data |                                               |
+| (SEARCH_CONDUCTED, SEARCH)              | 20344          | object           | SPI             |                                               |
+| (SEARCH_REASON, BASIS)                  | 34976          | object           | SPI             |                                               |
+| (INCIDENT_REASON, STOP_REASONS)         | 103566         | object           | SPI             |                                               |
+| (INCIDENT_REASON.1, FIOFS_REASONS)      | 149809         | object           | No missing data |                                               |
+| (DISPOSITION, OUTCOME)                  | 141042         | object           | SPI             |                                               |
+| (VEHICLE_MAKE, VEH_MAKE)                | 144591         | object           | CPI             | NO VEHICLE INVOLVED will not be considered.   |
+| (VEHICLE_YEAR, VEH_YEAR_NUM)            | 137858         | object           | CPI             | NO VEHICLE INVOLVED will not be considered.   |
+| (VEHICLE_COLOR, VEH_COLOR)              | 143402         | object           | CPI             | NO VEHICLE INVOLVED will not be considered.   |
+| (VEHICLE_DETAILS, VEH_OCCUPANT)         | 143030         | object           | CPI             | NO VEHICLE INVOLVED will not be considered.   |
+| (VEHICLE_DETAILS.1, VEH_STATE)          | 145090         | object           | CPI             | NO VEHICLE INVOLVED will not be considered.   |
+| (OFFICER_SUPERVISOR, SUPERVISOR_ID)     | 133170         | object           | MBI -> SPI      | OFFICER ID                                    |
+| (OFFICER_ID, OFFICER_ID)                | 149124         | object           | MBI -> SPI      | SUPERVISOR ID                                 |
+| (OFFICER_ASSIGNMENT, OFF_DIST_ID)       | 149809         | int64            | No missing data |                                               |
+| (OFFICER_AGE, AGE_AT_FIO_CORRECTED)     | 149809         | int64            | No missing data |                                               |
+| (LOCATION_STREET_NUMBER, STREET_ID)     | 149809         | int64            | No missing data |                                               |
+| (LOCATION_CITY, CITY)                   | 81456          | object           | MBI -> SPI      | STREET_ID                                     |
 
-## Feature Encoding and Information Extraction
+SPI: Simple Probalistic Imputer - Uses the probality distribution of the unique values to impute values.
+CPI: Complex Probalistic Imputer - Uses the probability distribution of some unique values to impute values.
+MBI: Multivariante Bayesian Imputer - Uses a Bayesian approach to impute the values based on the conditional probablity of another feature.
 
-| #   | Column                                                     | Encoding Method  | Reason           |
-|-----|------------------------------------------------------------|------------------|------------------|
-| 0   | (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)                      |
-| 1   | (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)                     |
-| 2   | (SUBJECT_GENDER, SEX)                                      |
-| 3   | (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION)   |
-| 4   | (LOCATION_DISTRICT, DIST)                                  |
-| 5   | (LOCATION_DISTRICT.1, DIST_ID)                             |
-| 6   | (INCIDENT_DATE, FIO_DATE)                                  |
-| 7   | (SUBJECT_DETAILS, PRIORS)                                  |
-| 8   | (SUBJECT_RACE, DESCRIPTION)                                |
-| 9   | (SUBJECT_DETAILS.1, CLOTHING)                              |
-| 10  | (SUBJECT_DETAILS.2, COMPLEXION)                            |
-| 11  | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)                           |
-| 12  | (UNKNOWN_FIELD_TYPE, TERRORISM)                            |
-| 13  | (SEARCH_CONDUCTED, SEARCH)                                 |
-| 14  | (SEARCH_REASON, BASIS)                                     |
-| 15  | (INCIDENT_REASON, STOP_REASONS)                            |
-| 16  | (INCIDENT_REASON.1, FIOFS_REASONS)                         |
-| 17  | (DISPOSITION, OUTCOME)                                     |
-| 18  | (VEHICLE_MAKE, VEH_MAKE)                                   |
-| 19  | (VEHICLE_YEAR, VEH_YEAR_NUM)                               |
-| 20  | (VEHICLE_COLOR, VEH_COLOR)                                 |
-| 21  | (VEHICLE_MODEL, VEH_MODEL)                                 |
-| 22  | (VEHICLE_DETAILS, VEH_OCCUPANT)                            |
-| 23  | (VEHICLE_DETAILS.1, VEH_STATE)                             |
-| 24  | (OFFICER_SUPERVISOR, SUPERVISOR_ID)                        |
-| 25  | (OFFICER_ID, OFFICER_ID)                                   |
-| 26  | (OFFICER_ASSIGNMENT, OFF_DIST_ID)                          |
-| 27  | (OFFICER_ASSIGNMENT.1, OFF_DIST)                           |
-| 28  | (OFFICER_ETHNICITY, ETHNICITY)                             |
-| 29  | (OFFICER_AGE, AGE_AT_FIO_CORRECTED)                        |
-| 30  | (LOCATION_STREET_NUMBER, STREET_ID)                        |
-| 31  | (LOCATION_CITY, CITY)                                      |
+(SUBJECT_RACE, DESCRIPTION) & (SUBJECT_DETAILS.2, COMPLEXION) \
+These two features deal with the subject itself. The probability of the subjects complexion is very likley to be dependet on the race and vice versa.
 
-## Imputing
+(OFFICER_SUPERVISOR, SUPERVISOR_ID) & (OFFICER_ASSIGNMENT, OFF_DIST_ID) \
+The officer and supervisor IDs can be considered as related, since they are usually fixed.
+
+(LOCATION_CITY, CITY)   \
+The street IDs relate with the city.
+
+All MBIs are followed by SPI to fill the remaining missing data.
 
 
+## Feature Selection
 
 
 
@@ -397,32 +391,6 @@ Step:
 5. Apply feature encoding
 Methods
     - One hot encoding
-
-3. Apply different impute methods for the features with missing values
-
-Impute methods:
-- Numerical Features
-    - mean, median, mode (most frequent value)
-    - Regression, stochastic regression
-    - interpolation, extrapolation
-
-- Categorical Features (nominal, ordinal)
-    - mode (most frequent value)
-    - KNN imputation
-    - Probailistic Imputation
-    - Hot-Deck Imputation
-
-3.1 Handle outliers
-    - Check visually for each feature
-    - take 3 times of standard deviation
-    - drop lines
-
-4. Apply feature scaling
-Methods
-    - min-max-scaling
-    - standardization (variance scaling)
-    - robust scaling
-
 
 
 6. Apply feature generation
