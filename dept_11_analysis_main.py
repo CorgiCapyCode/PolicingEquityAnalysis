@@ -3,8 +3,9 @@ import pandas as pd
 from dept_11_analysis.data_pre_filtering import redundant_feature_filtering, delete_duplicated_data_points
 from dept_11_analysis.data_cleaning import feature_value_cleaning, get_unique_value_df_for_features
 from dept_11_analysis.feature_filtering_2 import further_feature_filtering
-
+from dept_11_analysis.feature_selection import feature_selection
 from dept_11_analysis.data_imputing import data_imputing
+from dept_11_analysis.base_statistics import calculate_univariate_statistics
 
 def read_csv_file(path) -> pd.DataFrame:
     return pd.read_csv(path, header=[0, 1])
@@ -88,12 +89,16 @@ def dept_11_analysis_main():
     # endregion
 
     # region - Feature Selection
-    
+    comparison_results = feature_selection(df=df)
+    save_df_to_csv(df=comparison_results, output_filename="comparison_results.csv")
     # endregion
     
+    # region - Base statistics
+    calculate_univariate_statistics(df=df)
+    # endregion
     
-    save_df_to_csv(df=df, output_filename="test.csv")
-    df.info()
+    #save_df_to_csv(df=df, output_filename="test.csv")
+    # df.info()
     
 if __name__ == "__main__":
     dept_11_analysis_main()

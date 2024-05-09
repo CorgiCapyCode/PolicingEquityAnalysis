@@ -230,8 +230,6 @@ RP: Replace Placeholder         \
 (OFFICER_ASSIGNMENT.1, OFF_DIST)        \
 (LOCATION_STREET_NUMBER, STREET_ID)     \
 
-
-
 #### Modified features
 - (SUBJECT_GENDER, SEX)
     - Replace UNKNWON with NA-value
@@ -381,21 +379,24 @@ The street IDs relate with the city.
 
 All MBIs are followed by SPI to fill the remaining missing data.
 
-
 ## Feature Selection
+The Chi Square method resulted in not interpretable data. \
+For three features, F1, F2 and F3 where F1 and F2 have a p-value close to 0, the p-values for F1&F3 and F2&F3 would be expected to be nearly the same. \
+The resutls show that the p-values differs largely. The problem is suspected to be in the variety of variance (unique values) of the features.
 
+The normalized mutual information score was used to createa a comparison matrix. \
+The highest value is 0.77. \
+The group of features dealing with vehicle information is much higher dependent on each other than the rest of all features.
 
+No feature will be dropped. All features will be considered for further analysis.
+
+## Base Statistics
+
+- Histrogram over unique values or a Pie chart over unique values and a table (stored as csv)
+- most frequent value
+- for ordinal/numerical: mean, median, standard deviation, quartiles additionally
 
 # Agenda - Feature analysis
-Step:
-5. Apply feature encoding
-Methods
-    - One hot encoding
-
-
-6. Apply feature generation
-Methods
-- 
 
 7. Apply feature selection / dimensionality reduction
 
