@@ -261,13 +261,14 @@ RP: Replace Placeholder         \
     - Remove all "1"
     - Since all other IDs are much larger numbers, it can be assumed that the 1 and 2 stand for "UNKNOWN"/"MISSING DATA" etc.
 - (OFFICER_AGE, AGE_AT_FIO_CORRECTED)
-    - The age range lies in between -1 and 243. A threshold will be set between 6 and 120.
+    - The age range lies in between -1 and 243. A threshold will be set between 8 and 100.
 - (LOCATION_CITY, CITY)
     - Remove NO DATA ENTERED values
 - (OFFICER_ETHNICITY, ETHNICITY)
     - Data is partwise not interpretable.
 - (INCIDENT_REASON.1, FIOFS_REASONS)
     - Replace "INVESTIGATE" with "INVESTIGATION"
+    - Only take first category of reason (before ,)
 - (INCIDENT_REASON, STOP_REASONS)
     - Replaced OTHER (SPECIFY) with OTHER
 
@@ -333,12 +334,12 @@ The new list of features including unique values is:
 | ('OFFICER_SUPERVISOR', 'SUPERVISOR_ID')     | 218   |
 | ('OFFICER_ID', 'OFFICER_ID')                | 1791  |
 | ('OFFICER_ASSIGNMENT', 'OFF_DIST_ID')       | 26    |
-| ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')     | 119   |
+| ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')     | 88    |
 | ('LOCATION_STREET_NUMBER', 'STREET_ID')     | 3155  |
 | ('LOCATION_CITY', 'CITY')                   | 22    |
 
 ## Imputation
-After cleaning and filtering the data 4820 data points are complete. All other data points miss at least one value.
+After cleaning and filtering the data 4758 data points are complete. All other data points miss at least one value.
 
 | Feature                                 | Non-Null Count | Dtype            | Imputing method | Description                                   |
 |-----------------------------------------|----------------|------------------|-----------------|-----------------------------------------------|

@@ -252,7 +252,7 @@ def filter_unplausible_ages(entry: float) -> float:
     if pd.isna(entry):
         return pd.NA
     
-    if 6 <= entry <= 120:
+    if 8 <= entry <= 100:
         return entry
     else:
         return pd.NA
