@@ -19,7 +19,7 @@ def save_df_to_csv(df: pd.DataFrame, output_filename: str):
 
 
 def dept_11_analysis_main():
-    show_results = False
+    show_results = True
     threshold_to_drop = 30
     
     path = "raw_data/Dept_11-00091/11-00091_Field-Interviews_2011-2015.csv"    
@@ -92,7 +92,9 @@ def dept_11_analysis_main():
     # endregion
     
     # region - Imputation
-    print("Start Imputation")
+    print("Start Imputation")    
+    if show_results:
+        df.info()
     data_imputing(df=df, show_results=show_results)
     if show_results:
         print("DF info:")
@@ -123,6 +125,12 @@ def dept_11_analysis_main():
     
     # region - Clustering
     print("Start Clustering")
+    if show_results:
+        print("Input stats for Clustering")
+        df.info()
+        clustering_unique_counts, clustering_unique_values = get_unique_value_df_for_features(df=df)
+        print("Input unique value list for clustering:")
+        print(clustering_unique_values)
     testing = clustering(df=df)
     # save_df_to_csv(df=testing, output_filename="testing.csv")
 
