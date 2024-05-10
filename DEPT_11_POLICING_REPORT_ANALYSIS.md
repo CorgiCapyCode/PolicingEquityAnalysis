@@ -224,7 +224,6 @@ RP: Replace Placeholder         \
 (UNKNOWN_FIELD_TYPE, TERRORISM)         \
 (SEARCH_CONDUCTED, SEARCH)              \
 (SEARCH_REASON, BASIS)                  \
-(INCIDENT_REASON, STOP_REASONS)         \
 (DISPOSITION, OUTCOME)                  \
 (OFFICER_ASSIGNMENT, OFF_DIST_ID)       \
 (OFFICER_ASSIGNMENT.1, OFF_DIST)        \
@@ -246,6 +245,7 @@ RP: Replace Placeholder         \
     - The report states the data from 2011 to 2015. All other dates will be replaced with pd.NA (and later imputed)
 - (SUBJECT_RACE, DESCRIPTION)
     - Replace NO DATA ENTERED with NA-value
+    - Removed all ()
     - The item "UNKNWON" was kept, since it is possible that some subjects could not be categorized.
 - (SUBJECT_DETAILS.1, CLOTHING)
     - Transform all to upper cases
@@ -268,6 +268,8 @@ RP: Replace Placeholder         \
     - Data is partwise not interpretable.
 - (INCIDENT_REASON.1, FIOFS_REASONS)
     - Replace "INVESTIGATE" with "INVESTIGATION"
+- (INCIDENT_REASON, STOP_REASONS)
+    - Replaced OTHER (SPECIFY) with OTHER
 
 #### Vehicle related features
 - The state is the only feature without missing entries (empty), but includes 99.456 NO DATA ENTERED and 10673 OTHER values.
@@ -304,35 +306,36 @@ The test results show that all 4 columns are highly related with each other (p-v
 
 The feature (OFFICER_ETHNICITY, ETHNICITY) will be dropped, beacuse the data is not consistent and many abbriviations are not interpretable.
 
-After the 2nd iteration for feature filtering, 24 features remain in the dataset.
+The feature (UNKNOWN_FIELD_TYPE, TERRORISM) will be dropped due to its very low rate of "yes", thus yielding almost no information.
+
+After the 2nd iteration for feature filtering, 23 features remain in the dataset.
 The new list of features including unique values is:
 
-| Feature                                          | Unique Values |
-|--------------------------------------------------|---------------|
-| (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)            | 149809        |
-| (SUBJECT_GENDER, SEX)                            | 2             |
-| (INCIDENT_DATE, FIO_DATE)                        | 1668          |
-| (SUBJECT_DETAILS, PRIORS)                        | 3             |
-| (SUBJECT_RACE, DESCRIPTION)                      | 7             |
-| (SUBJECT_DETAILS.2, COMPLEXION)                  | 9             |
-| (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)                 | 26            |
-| (UNKNOWN_FIELD_TYPE, TERRORISM)                  | 2             |
-| (SEARCH_CONDUCTED, SEARCH)                       | 3             |
-| (SEARCH_REASON, BASIS)                           | 3             |
-| (INCIDENT_REASON, STOP_REASONS)                  | 6             |
-| (INCIDENT_REASON.1, FIOFS_REASONS)               | 222           |
-| (DISPOSITION, OUTCOME)                           | 7             |
-| (VEHICLE_MAKE, VEH_MAKE)                         | 47            |
-| (VEHICLE_YEAR, VEH_YEAR_NUM)                     | 48            |
-| (VEHICLE_COLOR, VEH_COLOR)                       | 16            |
-| (VEHICLE_DETAILS, VEH_OCCUPANT)                  | 3             |
-| (VEHICLE_DETAILS.1, VEH_STATE)                   | 47            |
-| (OFFICER_SUPERVISOR, SUPERVISOR_ID)              | 218           |
-| (OFFICER_ID, OFFICER_ID)                         | 1791          |
-| (OFFICER_ASSIGNMENT, OFF_DIST_ID)                | 26            |
-| (OFFICER_AGE, AGE_AT_FIO_CORRECTED)              | 119           |
-| (LOCATION_STREET_NUMBER, STREET_ID)              | 3155          |
-| (LOCATION_CITY, CITY)                            | 22            |
+| Features                                    | Count |
+|---------------------------------------------|-------|
+| ('INCIDENT_UNIQUE_IDENTIFIER', 'SEQ_NUM')   | 149809|
+| ('SUBJECT_GENDER', 'SEX')                   | 2     |
+| ('INCIDENT_DATE', 'FIO_DATE')               | 1668  |
+| ('SUBJECT_DETAILS', 'PRIORS')               | 3     |
+| ('SUBJECT_RACE', 'DESCRIPTION')             | 7     |
+| ('SUBJECT_DETAILS.2', 'COMPLEXION')         | 9     |
+| ('UNKNOWN_FIELD_TYPE', 'FIOFS_TYPE')        | 26    |
+| ('SEARCH_CONDUCTED', 'SEARCH')              | 3     |
+| ('SEARCH_REASON', 'BASIS')                  | 3     |
+| ('INCIDENT_REASON', 'STOP_REASONS')         | 6     |
+| ('INCIDENT_REASON.1', 'FIOFS_REASONS')      | 222   |
+| ('DISPOSITION', 'OUTCOME')                  | 7     |
+| ('VEHICLE_MAKE', 'VEH_MAKE')                | 47    |
+| ('VEHICLE_YEAR', 'VEH_YEAR_NUM')            | 48    |
+| ('VEHICLE_COLOR', 'VEH_COLOR')              | 16    |
+| ('VEHICLE_DETAILS', 'VEH_OCCUPANT')         | 3     |
+| ('VEHICLE_DETAILS.1', 'VEH_STATE')          | 47    |
+| ('OFFICER_SUPERVISOR', 'SUPERVISOR_ID')     | 218   |
+| ('OFFICER_ID', 'OFFICER_ID')                | 1791  |
+| ('OFFICER_ASSIGNMENT', 'OFF_DIST_ID')       | 26    |
+| ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')     | 119   |
+| ('LOCATION_STREET_NUMBER', 'STREET_ID')     | 3155  |
+| ('LOCATION_CITY', 'CITY')                   | 22    |
 
 ## Imputation
 After cleaning and filtering the data 4820 data points are complete. All other data points miss at least one value.
@@ -346,7 +349,6 @@ After cleaning and filtering the data 4820 data points are complete. All other d
 | (SUBJECT_RACE, DESCRIPTION)             | 143852         | object           | MBI -> SPI      | COMPLEXION                                    |
 | (SUBJECT_DETAILS.2, COMPLEXION)         | 127299         | object           | MBI -> SPI      | DESCRIPTION                                   |
 | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)        | 149809         | object           | No missing data |                                               |
-| (UNKNOWN_FIELD_TYPE, TERRORISM)         | 149809         | object           | No missing data |                                               |
 | (SEARCH_CONDUCTED, SEARCH)              | 20344          | object           | SPI             |                                               |
 | (SEARCH_REASON, BASIS)                  | 34976          | object           | SPI             |                                               |
 | (INCIDENT_REASON, STOP_REASONS)         | 103566         | object           | SPI             |                                               |
@@ -360,7 +362,7 @@ After cleaning and filtering the data 4820 data points are complete. All other d
 | (OFFICER_SUPERVISOR, SUPERVISOR_ID)     | 133170         | object           | MBI -> SPI      | OFFICER ID                                    |
 | (OFFICER_ID, OFFICER_ID)                | 149124         | object           | MBI -> SPI      | SUPERVISOR ID                                 |
 | (OFFICER_ASSIGNMENT, OFF_DIST_ID)       | 149809         | int64            | No missing data |                                               |
-| (OFFICER_AGE, AGE_AT_FIO_CORRECTED)     | 149809         | int64            | No missing data |                                               |
+| (OFFICER_AGE, AGE_AT_FIO_CORRECTED)     | 145833         | int64            | SPI             |                                               |
 | (LOCATION_STREET_NUMBER, STREET_ID)     | 149809         | int64            | No missing data |                                               |
 | (LOCATION_CITY, CITY)                   | 81456          | object           | MBI -> SPI      | STREET_ID                                     |
 
@@ -390,34 +392,49 @@ The group of features dealing with vehicle information is much higher dependent 
 
 No feature will be dropped. All features will be considered for further analysis.
 
+The date related feature will be split into year, month and day.
+
 ## Base Statistics
 
-- Histrogram over unique values or a Pie chart over unique values and a table (stored as csv)
-- most frequent value
-- for ordinal/numerical: mean, median, standard deviation, quartiles additionally
+- Univariate
+    - Analysis of the frequency of each value.
+    - Creation of pie chart and histogram (simplified for visualization)
+- Multivariate (time intensive process, creates >10000 plots)
+    - Grouping of two features
+    - Creation of scatter plots
+    - Creation of bar charts
 
-# Agenda - Feature analysis
 
-7. Apply feature selection / dimensionality reduction
+## Clustering
+- Categorical Grouping
+    - Subject status
+        - (SUBJECT_GENDER, SEX)
+        - (SUBJECT_RACE, DESCRIPTION)
+        - (SUBJECT_DETAILS.2, COMPLEXION)
+        - (SUBJECT_DETAILS, PRIORS)
+        - (OFFICER_AGE, AGE_AT_FIO_CORRECTED)
+    - Vehicle
+        - (VEHICLE_MAKE, VEH_MAKE)
+        - (VEHICLE_YEAR, VEH_YEAR_NUM)
+        - (VEHICLE_COLOR, VEH_COLOR)
+        - (VEHICLE_DETAILS, VEH_OCCUPANT)
+        - (VEHICLE_DETAILS.1, VEH_STATE)
+    - Location
+        - (LOCATION_STREET_NUMBER, STREET_ID)
+        - (LOCATION_CITY, CITY)
+        - (OFFICER_ASSIGNMENT, OFF_DIST_ID)
+    - Officer / Supervisor
+        - (OFFICER_SUPERVISOR, SUPERVISOR_ID)
+        - (OFFICER_ID, OFFICER_ID)
+    - Action
+        - (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)
+        - (SEARCH_CONDUCTED, SEARCH)
+        - (SEARCH_REASON, BASIS)
+        - (INCIDENT_REASON, STOP_REASONS)
+        - (INCIDENT_REASON.1, FIOFS_REASONS)
+    - Date
+        - (INCIDENT_DATE, FIO_DATE)
 
-Methods
-    - Principal Component Analysis (PCA) (DR) - only numerical features, not easily understandable feature space
-    - Multi-Dimensional Scaling (MDS) (DR) - for both types, easier, but still can be difficult to understand
-    - Local Linear Embedding (LLE) (DR)
-    - t-Dsitributed Stochastic Neighbor Embedding (t-SNE)
-    - feature ranking
-    - ANOVA
-    - Chi-Square test
-    - Mutual Information
-    - Permutation feature importance
-    - minimum/maximum accuracy
-    - Local Interpretable Model-agnostic explainations (LIME)
-    - Shapely Additive Explainations values (SHAP)
-    - Feature variance (low variance can be dropped - does not contain much information)ä
-    - Correlation matrix
-    - Exclusive Features Selection (EFS)
-    - Sequential Forward Feature Selection (SFS)
-    - Sequential Backward Feature Selection (SBS)
-    - Recursive feature elimination (RFE)
+
 
     

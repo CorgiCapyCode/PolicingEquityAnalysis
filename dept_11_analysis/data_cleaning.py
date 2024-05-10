@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 
 def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value_modification: list =[], show_results: bool =False):
     
-
     original_unique_value_counts, num_unique_values = get_unique_value_df_for_features(df=df)
 
     # simple standard modification: replace a value with another one
@@ -21,12 +20,13 @@ def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value
     modify_clothing(df=df)
     modify_vehicle_features(df=df)
     modfiy_ages(df=df)
+    modify_stop_reasons(df=df)
     
     fill_missing_with_na(df=df)
     number_of_dropped_data_points, data_completion_perc = drop_not_filled_data(df=df, threshold=threshold)
        
     new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
-
+    
     if show_results:
         print("")
         print("*******************")
@@ -140,7 +140,10 @@ def remove_signs(entry: str) -> str:
     sings_correction = {
         "/": ", ",
         ".": "",
-        ";": "",       
+        ";": "",
+        "(":"",
+        ")": "",
+        "\"": "",
     }
     for original_value, corrected_value in sings_correction.items():
         if original_value in entry:
@@ -245,13 +248,19 @@ def modfiy_ages(df: pd.DataFrame):
     df[feature_name] = df[feature_name].apply(filter_unplausible_ages)
 
 
-def filter_unplausible_ages(entry: str) -> str:
+def filter_unplausible_ages(entry: float) -> float:
     if pd.isna(entry):
         return pd.NA
     
-    if 6 >= entry >= 120:
-        entry = pd.NA
-    return entry
+    if 6 <= entry <= 120:
+        return entry
+    else:
+        return pd.NA
+
+
+def modify_stop_reasons(df: pd.DataFrame):
+    feature_name = ("INCIDENT_REASON.1", "FIOFS_REASONS")
+    df[feature_name] = df[feature_name].apply(remove_signs)
 
 # endregion
 # region 3-Show details

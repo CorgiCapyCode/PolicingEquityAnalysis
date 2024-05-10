@@ -12,6 +12,7 @@ def data_imputing(df: pd.DataFrame, show_results: bool =False):
   prob_distribution_basis = simple_probalistic_imputer(df=df, feature_name=("SEARCH_REASON", "BASIS"))
   prob_distribution_stop_reasons = simple_probalistic_imputer(df=df, feature_name=("INCIDENT_REASON", "STOP_REASONS"))
   prob_distribution_outcome = simple_probalistic_imputer(df=df, feature_name=("DISPOSITION", "OUTCOME"))
+  prob_distribution_age = simple_probalistic_imputer(df=df, feature_name=("OFFICER_AGE", "AGE_AT_FIO_CORRECTED"))
   
   not_considered_list = ["NO VEHICLE INVOLVED"]
   prob_distribution_veh_make = complex_probalistic_imputer(df=df, feature_name=("VEHICLE_MAKE", "VEH_MAKE"), not_considered_values=not_considered_list)
@@ -58,6 +59,8 @@ def data_imputing(df: pd.DataFrame, show_results: bool =False):
     print(prob_distribution_stop_reasons)
     print(f"The probalbity distribution for feature ('DISPOSITION', 'OUTCOME') is:")
     print(prob_distribution_outcome)   
+    print(f"The probalbity distribution for feature ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED') is:")
+    print(prob_distribution_age)
     
     print(f"The probalbity distribution for feature ('VEHICLE_MAKE', 'VEH_MAKE') is:")
     print(prob_distribution_veh_make)    
@@ -68,7 +71,8 @@ def data_imputing(df: pd.DataFrame, show_results: bool =False):
     print(f"The probalbity distribution for feature ('VEHICLE_DETAILS', 'VEH_OCCUPANT') is:")
     print(prob_distribution_veh_occ)    
     print(f"The probalbity distribution for feature ('VEHICLE_DETAILS.1', 'VEH_STATE') is:")
-    print(prob_distribution_veh_state)    
+    print(prob_distribution_veh_state)
+  
   
         
 def simple_probalistic_imputer(df: pd.DataFrame, feature_name: str):
