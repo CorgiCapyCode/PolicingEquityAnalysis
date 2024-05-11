@@ -123,6 +123,7 @@ def dept_11_analysis_main():
     # endregion
     
     # region - Clustering
+    ''''
     print("Start Clustering")
     if show_results:
         print("Input stats for Clustering")
@@ -135,9 +136,10 @@ def dept_11_analysis_main():
 
     
     print("End Clustering")
+    '''
     # endregion
     
-    save_df_to_csv(df=df, output_filename="test.csv")
+    save_df_to_csv(df=df, output_filename="prepared_dataframe.csv")
     # df.info()
     
 if __name__ == "__main__":
