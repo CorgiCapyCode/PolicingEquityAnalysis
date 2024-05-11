@@ -45,7 +45,7 @@ def data_imputing(df: pd.DataFrame, show_results: bool =False):
   if show_results:
     print("")
     print("*******************")
-    print("Results from feature_filtering_2.py")
+    print("Results from data_imputing.py")
     print("*******************")
     print("")
     print(f"The probalbity distribution for feature ('SUBJECT_GENDER', 'SEX') is:")

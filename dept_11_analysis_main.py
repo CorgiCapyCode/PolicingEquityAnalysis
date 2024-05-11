@@ -1,7 +1,7 @@
 import pandas as pd
 
 from dept_11_analysis.data_pre_filtering import redundant_feature_filtering, delete_duplicated_data_points
-from dept_11_analysis.data_cleaning import feature_value_cleaning, get_unique_value_df_for_features
+from dept_11_analysis.data_cleaning import feature_value_cleaning, get_unique_value_df_for_features, save_dataframes_to_csv
 from dept_11_analysis.feature_filtering_2 import further_feature_filtering
 from dept_11_analysis.feature_selection import feature_selection
 from dept_11_analysis.data_imputing import data_imputing
@@ -106,6 +106,15 @@ def dept_11_analysis_main():
     comparison_results = feature_selection(df=df, run_all=False)
     if comparison_results:
         save_df_to_csv(df=comparison_results, output_filename="comparison_results.csv")
+    if show_results:
+        print("")
+        print("FINAL FEATURE INFORMATION")
+        print("")
+        new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
+        print(f"New unique value list: {new_num_unique_values}")        
+        num_complete_data_points = df.dropna().shape[0]
+        print(f"Number of data points with no missing data: {num_complete_data_points}")       
+          
     print("End Feature Selection")
     # endregion
     
@@ -123,20 +132,22 @@ def dept_11_analysis_main():
     # endregion
     
     # region - Clustering
-    ''''
+    df.info()
+    
+    
     print("Start Clustering")
     if show_results:
         print("Input stats for Clustering")
         df.info()
         clustering_unique_counts, clustering_unique_values = get_unique_value_df_for_features(df=df)
+        save_dataframes_to_csv(dict_with_df=clustering_unique_counts, name="final_unique_values", sub_directory_name="final_values")
         print("Input unique value list for clustering:")
         print(clustering_unique_values)
     testing = clustering(df=df)
-    # save_df_to_csv(df=testing, output_filename="testing.csv")
+    save_df_to_csv(df=testing, output_filename="testing_compl.csv")
 
     
     print("End Clustering")
-    '''
     # endregion
     
     save_df_to_csv(df=df, output_filename="prepared_dataframe.csv")

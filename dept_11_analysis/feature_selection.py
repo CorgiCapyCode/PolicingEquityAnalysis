@@ -6,6 +6,11 @@ from sklearn.metrics import adjusted_mutual_info_score
 
 def feature_selection(df: pd.DataFrame, run_all: bool =True):
     split_date_and_time(df=df, feature=("INCIDENT_DATE", "FIO_DATE"))
+    
+    
+    
+    
+    
     if run_all:
         comparison_results = feature_comparison(df=df)
         plot_comparison_results(df=comparison_results)

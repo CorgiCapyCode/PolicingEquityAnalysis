@@ -261,7 +261,7 @@ RP: Replace Placeholder         \
     - Remove all "1"
     - Since all other IDs are much larger numbers, it can be assumed that the 1 and 2 stand for "UNKNOWN"/"MISSING DATA" etc.
 - (OFFICER_AGE, AGE_AT_FIO_CORRECTED)
-    - The age range lies in between -1 and 243. A threshold will be set between 8 and 100.
+    - The age range lies in between -1 and 243. A threshold will be set between 12 and 80.
 - (LOCATION_CITY, CITY)
     - Remove NO DATA ENTERED values
 - (OFFICER_ETHNICITY, ETHNICITY)
@@ -313,9 +313,9 @@ The feature (UNKNOWN_FIELD_TYPE, TERRORISM) will be dropped due to its very low 
 After the 2nd iteration for feature filtering, 23 features remain in the dataset.
 The new list of features including unique values is:
 
-| Features                                    | Count |
-|---------------------------------------------|-------|
-| ('INCIDENT_UNIQUE_IDENTIFIER', 'SEQ_NUM')   | 149809|
+| Features                                    | Count | Drop Reason
+|---------------------------------------------|-------|-------------
+| ('INCIDENT_UNIQUE_IDENTIFIER', 'SEQ_NUM')   | 149809| ignore for clustering
 | ('SUBJECT_GENDER', 'SEX')                   | 2     |
 | ('INCIDENT_DATE', 'FIO_DATE')               | 1668  |
 | ('SUBJECT_DETAILS', 'PRIORS')               | 3     |
@@ -385,17 +385,37 @@ The street IDs relate with the city.
 All MBIs are followed by SPI to fill the remaining missing data.
 
 ## Feature Selection
-The Chi Square method resulted in not interpretable data. \
-For three features, F1, F2 and F3 where F1 and F2 have a p-value close to 0, the p-values for F1&F3 and F2&F3 would be expected to be nearly the same. \
-The resutls show that the p-values differs largely. The problem is suspected to be in the variety of variance (unique values) of the features.
 
-The normalized mutual information score was used to createa a comparison matrix. \
-The highest value is 0.77. \
-The group of features dealing with vehicle information is much higher dependent on each other than the rest of all features.
 
-No feature will be dropped. All features will be considered for further analysis.
+Grouping of features:
 
-The date related feature will be split into year, month. The day information is removed to reduce complexity.
+| Column Name                               | Number of Unique Values | Grouping            | Exp. Eff. |
+|-------------------------------------------|-------------------------|---------------------|-----------|
+| ('INCIDENT_UNIQUE_IDENTIFIER', 'SEQ_NUM') | 149809                  | n/a                 |           |
+| ('SUBJECT_GENDER', 'SEX')                 | 2                       | n/a                 |           |
+| ('SUBJECT_DETAILS', 'PRIORS')             | 3                       | n/a                 |           |
+| ('SUBJECT_RACE', 'DESCRIPTION')           | 7                       | n/a                 |           |
+| ('SUBJECT_DETAILS.2', 'COMPLEXION')       | 9                       | <100 to OTHER       | -1        |
+| ('UNKNOWN_FIELD_TYPE', 'FIOFS_TYPE')      | 26                      | Create Features     | -21       |
+| ('SEARCH_CONDUCTED', 'SEARCH')            | 3                       | Create Features     | -1        |
+| ('SEARCH_REASON', 'BASIS')                | 3                       | n/a                 |           |
+| ('INCIDENT_REASON', 'STOP_REASONS')       | 6                       | <1000 to OTHER      | -2        |
+| ('INCIDENT_REASON.1', 'FIOFS_REASONS')    | 115                     | <100 to OTHER       | -85       |
+| ('DISPOSITION', 'OUTCOME')                | 7                       | Create Features     | -4        |
+| ('VEHICLE_MAKE', 'VEH_MAKE')              | 47                      | <100 to OTHER       | -14       |
+| ('VEHICLE_YEAR', 'VEH_YEAR_NUM')          | 48                      | <100 to OTHER       | -19       |
+| ('VEHICLE_COLOR', 'VEH_COLOR')            | 16                      | n/a                 |           |
+| ('VEHICLE_DETAILS', 'VEH_OCCUPANT')       | 3                       | n/a                 |           |
+| ('VEHICLE_DETAILS.1', 'VEH_STATE')        | 47                      | <10 to OTHER        | -15       |
+| ('OFFICER_SUPERVISOR', 'SUPERVISOR_ID')   | 218                     | <100 to OTHER       | -146      |
+| ('OFFICER_ID', 'OFFICER_ID')              | 1791                    | <10 to OTHER        | -767      |
+| ('OFFICER_ASSIGNMENT', 'OFF_DIST_ID')     | 26                      | <10 to OTHE         | -4        |
+| ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')   | 69                      | n/a                 |           |
+| ('LOCATION_STREET_NUMBER', 'STREET_ID')   | 3155                    | <10 to OTHER        | -1849     |
+| ('LOCATION_CITY', 'CITY')                 | 22                      | n/a                 |           |
+| ('Year', 'Year')                          | 5                       | n/a                 |           |
+| ('Month', 'Month')                        | 12                      | n/a                 |           |
+
 
 ## Base Statistics
 
@@ -435,8 +455,10 @@ The date related feature will be split into year, month. The day information is 
         - (SEARCH_REASON, BASIS)
         - (INCIDENT_REASON, STOP_REASONS)
         - (INCIDENT_REASON.1, FIOFS_REASONS)
+        - ('DISPOSITION', 'OUTCOME')
     - Date
-        - (INCIDENT_DATE, FIO_DATE)
+        - ('Year', 'Year')
+        - ('Month', 'Month')
 
 
 
