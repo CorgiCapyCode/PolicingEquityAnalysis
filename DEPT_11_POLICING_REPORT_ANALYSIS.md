@@ -386,8 +386,9 @@ All MBIs are followed by SPI to fill the remaining missing data.
 
 ## Feature Selection
 
+The current data contains more than 5,500 unique values, mainly categorical data. Using a clustering algorithm that uses distance metrics would require one hot encoding. This leads to a very complex dataframe.
+To reduce the complexity of this, the following table shows which actions will be done.
 
-Grouping of features:
 
 | Column Name                               | Number of Unique Values | Grouping            | Exp. Eff. |
 |-------------------------------------------|-------------------------|---------------------|-----------|
@@ -416,6 +417,8 @@ Grouping of features:
 | ('Year', 'Year')                          | 5                       | n/a                 |           |
 | ('Month', 'Month')                        | 12                      | n/a                 |           |
 
+
+<<COMMENT>>: If this should not be sufficient, then different clusters based on the grouping in chapter clustering will be conducted to create representatives.
 
 ## Base Statistics
 
@@ -463,3 +466,9 @@ Grouping of features:
 
 
     
+
+
+    For feature selection in preparation for an unsupervised clustering, which would be good metrics for categorical data?
+I currently have a lot of categorical features, some with a lot of unique values, up to 3000 (well compared to the total amount of data points, 150000, still low). When I would one hot encode everything, then it would end up in 5640 columns. Which would be a way to much for my computer to handle.
+So I am trying to find metrics, which features I can drop.
+I did a Chi2 test, and it did not work out. Using the mutual information on each pair of the feautres, did not yield information that would lead to a drop of features. I created a correlation matrix, using the mutual value as correlation value.

@@ -5,16 +5,27 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import adjusted_mutual_info_score
 
 def feature_selection(df: pd.DataFrame, run_all: bool =True):
+    print("")
+    print("*****************************")
+    print("Input for Feature Selection")
+    print("*****************************")
+    print("")
+    df.info()
+    
     split_date_and_time(df=df, feature=("INCIDENT_DATE", "FIO_DATE"))
-    
-    
-    
-    
+ 
     
     if run_all:
         comparison_results = feature_comparison(df=df)
         plot_comparison_results(df=comparison_results)
     else: comparison_results = None
+    
+    print("")
+    print("*****************************")
+    print("Output for Feature Selection")
+    print("*****************************")
+    print("")
+    df.info()
     return comparison_results
     
 
@@ -46,18 +57,23 @@ def mutual_info_comparison(df: pd.DataFrame, feature_1: str, feature_2: str) -> 
     mutual_info_value = adjusted_mutual_info_score(feature_1_values, feature_2_values)
     # print(mutual_info_value)
     return mutual_info_value
+
     
 def plot_comparison_results(df: pd.DataFrame):
     plt.figure(figsize=(10, 10))
     sns.heatmap(df.astype(float), cmap="coolwarm", annot=True, fmt=".2f", linewidths=0.5)
-    plt.title("Feature Chi Square Comparison Results")
+    plt.title("Feature Mutual Information Comparison Results")
     plt.xlabel("Features")
     plt.ylabel("Features")
     plt.savefig("dept_11_analysis/comparison_heatmap.jpg")
+
 
 def split_date_and_time(df: pd.DataFrame, feature: str):
     df[("Year", "Year")] = df[feature].dt.year
     df[("Month", "Month")] = df[feature].dt.month
     # df[("Day", "Day")] = df[feature].dt.day
     df.drop(columns=[feature], inplace=True)
-    
+
+
+def variance_of_feature(df: pd.DataFrame, feature_name: str) -> float:
+    return df[feature_name].var()

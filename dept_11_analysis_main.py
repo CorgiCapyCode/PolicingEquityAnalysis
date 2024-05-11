@@ -19,7 +19,7 @@ def save_df_to_csv(df: pd.DataFrame, output_filename: str):
 
 
 def dept_11_analysis_main():
-    show_results = True
+    show_results = False
     threshold_to_drop = 30
     
     path = "raw_data/Dept_11-00091/11-00091_Field-Interviews_2011-2015.csv"    
@@ -103,8 +103,8 @@ def dept_11_analysis_main():
 
     # region - Feature Selection
     print("Start Feature Selection")
-    comparison_results = feature_selection(df=df, run_all=False)
-    if comparison_results:
+    comparison_results = feature_selection(df=df, run_all=True)
+    if not comparison_results.empty:
         save_df_to_csv(df=comparison_results, output_filename="comparison_results.csv")
     if show_results:
         print("")
@@ -132,8 +132,7 @@ def dept_11_analysis_main():
     # endregion
     
     # region - Clustering
-    df.info()
-    
+    ''' 
     
     print("Start Clustering")
     if show_results:
@@ -148,10 +147,10 @@ def dept_11_analysis_main():
 
     
     print("End Clustering")
+    '''
     # endregion
     
     save_df_to_csv(df=df, output_filename="prepared_dataframe.csv")
-    # df.info()
     
 if __name__ == "__main__":
     dept_11_analysis_main()
