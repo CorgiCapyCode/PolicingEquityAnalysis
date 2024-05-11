@@ -269,6 +269,7 @@ RP: Replace Placeholder         \
 - (INCIDENT_REASON.1, FIOFS_REASONS)
     - Replace "INVESTIGATE" with "INVESTIGATION"
     - Only take first category of reason (before ,)
+    - Grouping different categories
 - (INCIDENT_REASON, STOP_REASONS)
     - Replaced OTHER (SPECIFY) with OTHER
 
@@ -277,9 +278,9 @@ RP: Replace Placeholder         \
 - Some other vehicle related features show entries (e.g. "make" with 717 entries)
 - The same applies for the other features, although occupant and model have no NO DATA ENTERED entries, but much more missing entries.
 - As assumption:
-    - Data points where all vehicle related features miss data (NO DATA ENTERED, 0, ""), no vehicle was involved. These fields will be filled with "NO VEHICLE INVOLVED".
+    - Data points where all vehicle related features miss data (NO DATA ENTERED, 0, ""), including SEARCH not containing V or VP, no vehicle was involved. These fields will be filled with "NO VEHICLE INVOLVED".
     - Data points where at least one vehicle feature, will be counted as vehicle involved. Here the other missing features will be imputed later.
-    - This assumption relates in 103670 entries where no vehicle was involved.
+    - This assumption relates in 103273 entries where no vehicle was involved.
 - VEH_MODEL receives further adjustments to the values.
     - Writting all in upper case and removing "." etc. reduced the unique values to around 1500.
     - The remaining differences are often based on a single entry (in the original unique entry list 90% of the values have less than 10 entries).
@@ -324,7 +325,7 @@ The new list of features including unique values is:
 | ('SEARCH_CONDUCTED', 'SEARCH')              | 3     |
 | ('SEARCH_REASON', 'BASIS')                  | 3     |
 | ('INCIDENT_REASON', 'STOP_REASONS')         | 6     |
-| ('INCIDENT_REASON.1', 'FIOFS_REASONS')      | 222   |
+| ('INCIDENT_REASON.1', 'FIOFS_REASONS')      | 115   |
 | ('DISPOSITION', 'OUTCOME')                  | 7     |
 | ('VEHICLE_MAKE', 'VEH_MAKE')                | 47    |
 | ('VEHICLE_YEAR', 'VEH_YEAR_NUM')            | 48    |
@@ -339,7 +340,7 @@ The new list of features including unique values is:
 | ('LOCATION_CITY', 'CITY')                   | 22    |
 
 ## Imputation
-After cleaning and filtering the data 4758 data points are complete. All other data points miss at least one value.
+After cleaning and filtering the data 4691 data points are complete. All other data points miss at least one value.
 
 | Feature                                 | Non-Null Count | Dtype            | Imputing method | Description                                   |
 |-----------------------------------------|----------------|------------------|-----------------|-----------------------------------------------|
@@ -350,7 +351,7 @@ After cleaning and filtering the data 4758 data points are complete. All other d
 | (SUBJECT_RACE, DESCRIPTION)             | 143852         | object           | MBI -> SPI      | COMPLEXION                                    |
 | (SUBJECT_DETAILS.2, COMPLEXION)         | 127299         | object           | MBI -> SPI      | DESCRIPTION                                   |
 | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)        | 149809         | object           | No missing data |                                               |
-| (SEARCH_CONDUCTED, SEARCH)              | 20344          | object           | SPI             |                                               |
+| (SEARCH_CONDUCTED, SEARCH)              | 20344          | object           | DI, SPI         |                                               |
 | (SEARCH_REASON, BASIS)                  | 34976          | object           | SPI             |                                               |
 | (INCIDENT_REASON, STOP_REASONS)         | 103566         | object           | SPI             |                                               |
 | (INCIDENT_REASON.1, FIOFS_REASONS)      | 149809         | object           | No missing data |                                               |
@@ -370,6 +371,7 @@ After cleaning and filtering the data 4758 data points are complete. All other d
 SPI: Simple Probalistic Imputer - Uses the probality distribution of the unique values to impute values.
 CPI: Complex Probalistic Imputer - Uses the probability distribution of some unique values to impute values.
 MBI: Multivariante Bayesian Imputer - Uses a Bayesian approach to impute the values based on the conditional probablity of another feature.
+DI: Dependent Imputer - Uses values from other columns that ensure data correctness.
 
 (SUBJECT_RACE, DESCRIPTION) & (SUBJECT_DETAILS.2, COMPLEXION) \
 These two features deal with the subject itself. The probability of the subjects complexion is very likley to be dependet on the race and vice versa.
@@ -393,7 +395,7 @@ The group of features dealing with vehicle information is much higher dependent 
 
 No feature will be dropped. All features will be considered for further analysis.
 
-The date related feature will be split into year, month and day.
+The date related feature will be split into year, month. The day information is removed to reduce complexity.
 
 ## Base Statistics
 

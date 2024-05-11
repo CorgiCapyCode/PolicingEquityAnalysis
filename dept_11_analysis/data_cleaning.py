@@ -20,7 +20,24 @@ def feature_value_cleaning(df: pd.DataFrame, threshold: float =30, feature_value
     modify_clothing(df=df)
     modify_vehicle_features(df=df)
     modfiy_ages(df=df)
-    modify_stop_reasons(df=df)
+    modify_fiofs_reasons(df=df)
+    
+    post_processing_list =[
+        (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("209A INTIMIDATION OF WITNESS", "209A")]),
+        (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("A&B PO", "A&B")]),
+        (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("ASSAULTW", "ASSAULT")]),
+        (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("DISTURBING", "DISTURBANCE")]),
+        (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("DISTURBING PUBLIC ASSEMBLY", "DISTURBANCE")]),
+        (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("IMPERSONATING PO", "IMPERSONATION")]),
+        (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("IMPERSONATING", "IMPERSONATION")]),
+        (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("LARCENY OF LEASED OR RENTED PROPERTY", "LARENCY")]),
+        (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("WARRANT ARREST", "WARRANTS")]),
+        (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("CITY ORDINANCES", "CITY ORDINANCE")]),
+        (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("CITY ORDINANCE OTHER", "CITY ORDINANCE")]),
+    ]
+    
+    for feature_name, modification in post_processing_list:
+        df = simple_data_preprocessing(df=df, feature_name=feature_name, value_modification=modification)
     
     fill_missing_with_na(df=df)
     number_of_dropped_data_points, data_completion_perc = drop_not_filled_data(df=df, threshold=threshold)
@@ -214,8 +231,12 @@ def modify_vehicle_features(df: pd.DataFrame):
         ("VEHICLE_DETAILS", "VEH_OCCUPANT"),
         ("VEHICLE_MODEL", "VEH_MODEL")
     ]
-    all_empty__data_points = df[vehicle_related_columns].isna().all(axis=1)
-    df.loc[all_empty__data_points, vehicle_related_columns] = "NO VEHICLE INVOLVED"
+    
+    search_not_v = ~df[[("SEARCH_CONDUCTED", "SEARCH")]].isin(["VP", "V"]).any(axis=1)
+        
+    all_empty_data_points = df[vehicle_related_columns].isna().all(axis=1)
+    final_condition = search_not_v & all_empty_data_points
+    df.loc[final_condition, vehicle_related_columns] = "NO VEHICLE INVOLVED"
     
     
     df[("VEHICLE_MODEL", "VEH_MODEL")] = df[("VEHICLE_MODEL", "VEH_MODEL")].apply(writte_all_in_upper_case)
@@ -258,9 +279,12 @@ def filter_unplausible_ages(entry: float) -> float:
         return pd.NA
 
 
-def modify_stop_reasons(df: pd.DataFrame):
+def modify_fiofs_reasons(df: pd.DataFrame):
     feature_name = ("INCIDENT_REASON.1", "FIOFS_REASONS")
     df[feature_name] = df[feature_name].apply(remove_signs)
+    df[feature_name] = df[feature_name].apply(lambda x: x.split(",")[0].strip())
+    
+    pass
 
 # endregion
 # region 3-Show details

@@ -4,6 +4,9 @@ import numpy as np
 
 
 def data_imputing(df: pd.DataFrame, show_results: bool =False):
+  # Special Method
+  dependent_imputer(df=df, target_feature=("SEARCH_CONDUCTED", "SEARCH"), dependent_feature=("VEHICLE_YEAR", "VEH_YEAR_NUM"))
+  
   # Univariate imputing methods
   prob_distribution_sex = simple_probalistic_imputer(df=df, feature_name=("SUBJECT_GENDER", "SEX"))
   prob_distribution_date = simple_probalistic_imputer(df=df, feature_name=("INCIDENT_DATE", "FIO_DATE"))
@@ -124,3 +127,9 @@ def multivariate_bayesian_imputer(df: pd.DataFrame, target_feature: str, cond_fe
     generated_values = np.random.choice(unique_target_values, size=missing_mask.sum(), p=probabilities)
     df.loc[missing_indicies, target_feature] = generated_values
   
+
+def dependent_imputer(df: pd.DataFrame, target_feature: str, dependent_feature: str):
+  empty_rows = df[target_feature].isna()
+  no_vehicle_involved = df[dependent_feature] == "NO VEHICLE INVOLVED"
+  impute_condition = empty_rows & no_vehicle_involved
+  df.loc[impute_condition, target_feature] = "P"

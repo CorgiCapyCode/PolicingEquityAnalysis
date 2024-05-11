@@ -35,8 +35,7 @@ def dept_11_analysis_main():
     print("Start Data Cleaning")
     simple_feature_value_modification_list = [
         (("SUBJECT_GENDER", "SEX"), [("UNKNOWN", pd.NA)]),
-        (("SUBJECT_RACE", "DESCRIPTION"), [("NO DATA ENTERED", pd.NA)]),
-        
+        (("SUBJECT_RACE", "DESCRIPTION"), [("NO DATA ENTERED", pd.NA)]), 
         (("SUBJECT_RACE", "DESCRIPTION"), [("B(Black)", "Black")]),
         (("SUBJECT_RACE", "DESCRIPTION"), [("W(White)", "White")]),
         (("SUBJECT_RACE", "DESCRIPTION"), [("H(Hispanic)", "Hispanic")]),
