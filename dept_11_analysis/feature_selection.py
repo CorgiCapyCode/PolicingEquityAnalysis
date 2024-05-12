@@ -3,16 +3,12 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 # from dept_11_analysis.feature_filtering_2 import chi_square_test, chi_square_test_label_encoder, chi_square_test_one_hot_encoder
 from sklearn.metrics import adjusted_mutual_info_score
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, RobustScaler, MinMaxScaler
 
+
+# region - Feature Selection
 def feature_selection(df: pd.DataFrame, run_all: bool =True):
-    print("")
-    print("*****************************")
-    print("Input for Feature Selection")
-    print("*****************************")
-    print("")
-    df.info()
-    
+    # Split date to year and month, and day information.
     split_date_and_time(df=df, feature=("INCIDENT_DATE", "FIO_DATE"))
     # Splitting features that use combinations of shortcuts (e.g. F, I, FI, ...)
     char_feature_split(df=df, feature_name=('UNKNOWN_FIELD_TYPE', 'FIOFS_TYPE'))
@@ -21,7 +17,8 @@ def feature_selection(df: pd.DataFrame, run_all: bool =True):
     
     # Group insignificant features <25 occurences
     for feature_name in df.columns:
-        group_insignificant_values(df=df, feature_name=feature_name)
+        if feature_name != ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED'):
+            group_insignificant_values(df=df, feature_name=feature_name)
     
     # Label encode binary feature - can be interpreted as "MALE?" 1: True, 0: False
     label_encode_feature(df=df, feature_name=('SUBJECT_GENDER', 'SEX'))
@@ -30,14 +27,7 @@ def feature_selection(df: pd.DataFrame, run_all: bool =True):
         comparison_results = feature_comparison(df=df)
         plot_comparison_results(df=comparison_results)
     else: comparison_results = None
-    
-    print("")
-    print("*****************************")
-    print("Output for Feature Selection")
-    print("*****************************")
-    print("")
-    df.info()
-    
+      
     return comparison_results
     
 
@@ -62,7 +52,6 @@ def feature_comparison(df: pd.DataFrame) -> pd.DataFrame:
     return comparison_results
     
 
-
 def mutual_info_comparison(df: pd.DataFrame, feature_1: str, feature_2: str) -> float:
     feature_1_values = df[feature_1].values
     feature_2_values = df[feature_2].values
@@ -83,7 +72,7 @@ def plot_comparison_results(df: pd.DataFrame):
 def split_date_and_time(df: pd.DataFrame, feature: str):
     df[("Year", "Year")] = df[feature].dt.year
     df[("Month", "Month")] = df[feature].dt.month
-    # df[("Day", "Day")] = df[feature].dt.day
+    df[("Day", "Day")] = df[feature].dt.day
     df.drop(columns=[feature], inplace=True)
 
 
@@ -108,8 +97,26 @@ def group_insignificant_values(df: pd.DataFrame, feature_name: str):
     unique_values = value_counts[value_counts < 25].index.tolist()
     # Ensure that binary features are not considered.
     if len(unique_values) > 2:
+        df[feature_name] = df[feature_name].astype(str)
+        unique_values = [str(val) for val in unique_values]
         df.loc[df[feature_name].isin(unique_values), feature_name] = "OTHER"
         
 def label_encode_feature(df: pd.DataFrame, feature_name: str):
     label_encoder = LabelEncoder()
     df[feature_name] = label_encoder.fit_transform(df[feature_name])
+    
+# endregion
+# region - Feature Scaling
+
+def feature_scaling(df: pd.DataFrame):
+    df[('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')] = df[('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')].astype(int)
+    min_max_scaler(df=df, feature_name=('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED'))
+    min_max_scaler(df=df, feature_name=('Year', 'Year'))
+    min_max_scaler(df=df, feature_name=("Month", "Month"))    
+    min_max_scaler(df=df, feature_name=("Day", "Day"))    
+    
+    
+def min_max_scaler(df: pd.DataFrame, feature_name: str):
+    scaler = MinMaxScaler()
+    scaled_values = scaler.fit_transform(df[[feature_name]])
+    df[feature_name] = scaled_values

@@ -5,7 +5,7 @@ def clustering(df: pd.DataFrame):
     ohe_df = one_hot_encoding(df=df)
     ohe_df.info()
 
-    k_clusters_all = kmeans_cluster_all(df=ohe_df)
+    # k_clusters_all = kmeans_cluster_all(df=ohe_df)
     
     return ohe_df
 

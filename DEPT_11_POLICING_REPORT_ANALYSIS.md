@@ -390,7 +390,7 @@ The current data contains more than 5,500 unique values, mainly categorical data
 To reduce the complexity of this, the following table shows which actions will be done.
 
 
-| Column Name                               | Number of Unique Values | Grouping            |
+| Column Name                               | Number of Unique Values | Action              |
 |-------------------------------------------|-------------------------|---------------------|
 | ('INCIDENT_UNIQUE_IDENTIFIER', 'SEQ_NUM') | 149809                  | n/a                 |
 | ('SUBJECT_GENDER', 'SEX')                 | 2                       | Label Encoding      |
@@ -411,17 +411,19 @@ To reduce the complexity of this, the following table shows which actions will b
 | ('OFFICER_SUPERVISOR', 'SUPERVISOR_ID')   | 218                     | <10 to OTHER        |
 | ('OFFICER_ID', 'OFFICER_ID')              | 1791                    | <10 to OTHER        |
 | ('OFFICER_ASSIGNMENT', 'OFF_DIST_ID')     | 26                      | <10 to OTHE         |
-| ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')   | 71                      | n/a                 |
+| ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')   | 71                      | Scaling             |
 | ('LOCATION_STREET_NUMBER', 'STREET_ID')   | 3155                    | <10 to OTHER        |
 | ('LOCATION_CITY', 'CITY')                 | 22                      | n/a                 |
-| ('Year', 'Year')                          | 5                       | n/a                 |
-| ('Month', 'Month')                        | 12                      | n/a                 |
+| ('Year', 'Year')                          | 5                       | Scaling             |
+| ('Month', 'Month')                        | 12                      | Scaling             |
 
 
 The columns with only two different unique values, do not need to be one hot encoded, since they are already of boolean nature. \
 The feature ('SUBJECT_GENDER', 'SEX') label encoded. \
-Further all unique values below 10 occurences will be grouped to "OTHER", to reduce complexity. This would result in around 2800 columns, when one hot encoded.
+Further all unique values below 25 occurences will be grouped to "OTHER", to reduce complexity.
+The age, year, month and day have been scaled using the min-max scaler.
 
+Applied 
 
 
 ## Base Statistics
@@ -466,13 +468,3 @@ Further all unique values below 10 occurences will be grouped to "OTHER", to red
     - Date
         - ('Year', 'Year')
         - ('Month', 'Month')
-
-
-
-    
-
-
-    For feature selection in preparation for an unsupervised clustering, which would be good metrics for categorical data?
-I currently have a lot of categorical features, some with a lot of unique values, up to 3000 (well compared to the total amount of data points, 150000, still low). When I would one hot encode everything, then it would end up in 5640 columns. Which would be a way to much for my computer to handle.
-So I am trying to find metrics, which features I can drop.
-I did a Chi2 test, and it did not work out. Using the mutual information on each pair of the feautres, did not yield information that would lead to a drop of features. I created a correlation matrix, using the mutual value as correlation value.

@@ -3,7 +3,7 @@ import pandas as pd
 from dept_11_analysis.data_pre_filtering import redundant_feature_filtering, delete_duplicated_data_points
 from dept_11_analysis.data_cleaning import feature_value_cleaning, get_unique_value_df_for_features, save_dataframes_to_csv
 from dept_11_analysis.feature_filtering_2 import further_feature_filtering
-from dept_11_analysis.feature_selection import feature_selection
+from dept_11_analysis.feature_selection import feature_selection, feature_scaling
 from dept_11_analysis.data_imputing import data_imputing
 from dept_11_analysis.base_statistics import calculate_univariate_statistics, calculate_multivariate_statistics
 from dept_11_analysis.clustering_functions import clustering
@@ -29,7 +29,7 @@ def dept_11_analysis_main():
     print("Start Feature and Data Pre-Filtering")
     redundant_feature_filtering(df=df, show_results=show_results)
     delete_duplicated_data_points(df=df, show_results=show_results)
-    print("End SFeature and Data Pre-Filtering")
+    print("End Feature and Data Pre-Filtering")
     # endregion
     # region - Data Cleaning
     print("Start Data Cleaning")
@@ -106,14 +106,15 @@ def dept_11_analysis_main():
         print("")
         new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
         print(f"New unique value list: {new_num_unique_values}")     
+    
           
+   
     print("End Feature Selection")
     # endregion
     
     # region - Base statistics
     print("Start Base Statistics")
     
-
     univariate_statistics = calculate_univariate_statistics(df=df)
     if show_results:
         for key, value in univariate_statistics.items():
@@ -123,14 +124,26 @@ def dept_11_analysis_main():
     # Creates 2D plots (option for 3D as well)
     # calculate_multivariate_statistics(df=df)
     print("End Base Statistics")
+    
     # endregion
+    # region - Feature Scaling
+    
+    feature_scaling(df=df)     
+    
+    # endregion
+    
+    print("")
+    print("################################")
     print("Final df-info before clustering:")
+    print("################################")
+    print("")
     df.info()
     save_df_to_csv(df=df, output_filename="prepared_dataframe.csv")    
 
 
     # region - Clustering
-    '''
+
+    
     print("Start Clustering")
     if show_results:
         print("Input stats for Clustering")
@@ -144,7 +157,6 @@ def dept_11_analysis_main():
 
     
     print("End Clustering")
-    '''
     # endregion
 
     
