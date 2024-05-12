@@ -53,16 +53,7 @@ def dept_11_analysis_main():
         (("LOCATION_CITY", "CITY"), [("NO DATA ENTERED", pd.NA)]),
         (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("INVESTIGATE", "INVESTIGATION")])
     ]
-    
-    # complex_feature_value_modification_list = [
-    #    ("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION")
-    #    ("INCIDENT_DATE", "FIO_DATE")
-    #    ("SUBJECT_DETAILS.1", "CLOTHING")
-    #    ("VEHICLE_MAKE", "VEH_MAKE") and other vehicle related features
-    #    ("OFFICER_AGE", "AGE_AT_FIO_CORRECTED")
-    # ]
-    # see data_cleaning for complex feature value modification
-       
+           
     df = feature_value_cleaning(
         df=df,
         threshold=threshold_to_drop,
@@ -103,23 +94,26 @@ def dept_11_analysis_main():
 
     # region - Feature Selection
     print("Start Feature Selection")
-    comparison_results = feature_selection(df=df, run_all=True)
-    if not comparison_results.empty:
+    comparison_results = feature_selection(df=df, run_all=False)
+    if comparison_results is None:
+        pass
+    elif not comparison_results.empty:
         save_df_to_csv(df=comparison_results, output_filename="comparison_results.csv")
+
     if show_results:
         print("")
         print("FINAL FEATURE INFORMATION")
         print("")
         new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
-        print(f"New unique value list: {new_num_unique_values}")        
-        num_complete_data_points = df.dropna().shape[0]
-        print(f"Number of data points with no missing data: {num_complete_data_points}")       
+        print(f"New unique value list: {new_num_unique_values}")     
           
     print("End Feature Selection")
     # endregion
     
     # region - Base statistics
     print("Start Base Statistics")
+    
+
     univariate_statistics = calculate_univariate_statistics(df=df)
     if show_results:
         for key, value in univariate_statistics.items():
@@ -130,10 +124,13 @@ def dept_11_analysis_main():
     # calculate_multivariate_statistics(df=df)
     print("End Base Statistics")
     # endregion
-    
+    print("Final df-info before clustering:")
+    df.info()
+    save_df_to_csv(df=df, output_filename="prepared_dataframe.csv")    
+
+
     # region - Clustering
-    ''' 
-    
+    '''
     print("Start Clustering")
     if show_results:
         print("Input stats for Clustering")
@@ -149,8 +146,7 @@ def dept_11_analysis_main():
     print("End Clustering")
     '''
     # endregion
-    
-    save_df_to_csv(df=df, output_filename="prepared_dataframe.csv")
+
     
 if __name__ == "__main__":
     dept_11_analysis_main()

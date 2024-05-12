@@ -261,7 +261,7 @@ RP: Replace Placeholder         \
     - Remove all "1"
     - Since all other IDs are much larger numbers, it can be assumed that the 1 and 2 stand for "UNKNOWN"/"MISSING DATA" etc.
 - (OFFICER_AGE, AGE_AT_FIO_CORRECTED)
-    - The age range lies in between -1 and 243. A threshold will be set between 12 and 80.
+    - The age range lies in between -1 and 243. A threshold will be set between 10 and 80.
 - (LOCATION_CITY, CITY)
     - Remove NO DATA ENTERED values
 - (OFFICER_ETHNICITY, ETHNICITY)
@@ -335,7 +335,7 @@ The new list of features including unique values is:
 | ('OFFICER_SUPERVISOR', 'SUPERVISOR_ID')     | 218   |
 | ('OFFICER_ID', 'OFFICER_ID')                | 1791  |
 | ('OFFICER_ASSIGNMENT', 'OFF_DIST_ID')       | 26    |
-| ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')     | 88    |
+| ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')     | 71    |
 | ('LOCATION_STREET_NUMBER', 'STREET_ID')     | 3155  |
 | ('LOCATION_CITY', 'CITY')                   | 22    |
 
@@ -390,35 +390,39 @@ The current data contains more than 5,500 unique values, mainly categorical data
 To reduce the complexity of this, the following table shows which actions will be done.
 
 
-| Column Name                               | Number of Unique Values | Grouping            | Exp. Eff. |
-|-------------------------------------------|-------------------------|---------------------|-----------|
-| ('INCIDENT_UNIQUE_IDENTIFIER', 'SEQ_NUM') | 149809                  | n/a                 |           |
-| ('SUBJECT_GENDER', 'SEX')                 | 2                       | n/a                 |           |
-| ('SUBJECT_DETAILS', 'PRIORS')             | 3                       | n/a                 |           |
-| ('SUBJECT_RACE', 'DESCRIPTION')           | 7                       | n/a                 |           |
-| ('SUBJECT_DETAILS.2', 'COMPLEXION')       | 9                       | <100 to OTHER       | -1        |
-| ('UNKNOWN_FIELD_TYPE', 'FIOFS_TYPE')      | 26                      | Create Features     | -21       |
-| ('SEARCH_CONDUCTED', 'SEARCH')            | 3                       | Create Features     | -1        |
-| ('SEARCH_REASON', 'BASIS')                | 3                       | n/a                 |           |
-| ('INCIDENT_REASON', 'STOP_REASONS')       | 6                       | <1000 to OTHER      | -2        |
-| ('INCIDENT_REASON.1', 'FIOFS_REASONS')    | 115                     | <100 to OTHER       | -85       |
-| ('DISPOSITION', 'OUTCOME')                | 7                       | Create Features     | -4        |
-| ('VEHICLE_MAKE', 'VEH_MAKE')              | 47                      | <100 to OTHER       | -14       |
-| ('VEHICLE_YEAR', 'VEH_YEAR_NUM')          | 48                      | <100 to OTHER       | -19       |
-| ('VEHICLE_COLOR', 'VEH_COLOR')            | 16                      | n/a                 |           |
-| ('VEHICLE_DETAILS', 'VEH_OCCUPANT')       | 3                       | n/a                 |           |
-| ('VEHICLE_DETAILS.1', 'VEH_STATE')        | 47                      | <10 to OTHER        | -15       |
-| ('OFFICER_SUPERVISOR', 'SUPERVISOR_ID')   | 218                     | <100 to OTHER       | -146      |
-| ('OFFICER_ID', 'OFFICER_ID')              | 1791                    | <10 to OTHER        | -767      |
-| ('OFFICER_ASSIGNMENT', 'OFF_DIST_ID')     | 26                      | <10 to OTHE         | -4        |
-| ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')   | 69                      | n/a                 |           |
-| ('LOCATION_STREET_NUMBER', 'STREET_ID')   | 3155                    | <10 to OTHER        | -1849     |
-| ('LOCATION_CITY', 'CITY')                 | 22                      | n/a                 |           |
-| ('Year', 'Year')                          | 5                       | n/a                 |           |
-| ('Month', 'Month')                        | 12                      | n/a                 |           |
+| Column Name                               | Number of Unique Values | Grouping            |
+|-------------------------------------------|-------------------------|---------------------|
+| ('INCIDENT_UNIQUE_IDENTIFIER', 'SEQ_NUM') | 149809                  | n/a                 |
+| ('SUBJECT_GENDER', 'SEX')                 | 2                       | Label Encoding      |
+| ('SUBJECT_DETAILS', 'PRIORS')             | 3                       | n/a                 |
+| ('SUBJECT_RACE', 'DESCRIPTION')           | 7                       | n/a                 |
+| ('SUBJECT_DETAILS.2', 'COMPLEXION')       | 9                       | <10 to OTHER        |
+| ('UNKNOWN_FIELD_TYPE', 'FIOFS_TYPE')      | 26                      | Create Features     |
+| ('SEARCH_CONDUCTED', 'SEARCH')            | 3                       | Create Features     |
+| ('SEARCH_REASON', 'BASIS')                | 3                       | n/a                 |
+| ('INCIDENT_REASON', 'STOP_REASONS')       | 6                       | <10 to OTHER        |
+| ('INCIDENT_REASON.1', 'FIOFS_REASONS')    | 115                     | <10 to OTHER        |
+| ('DISPOSITION', 'OUTCOME')                | 7                       | Create Features     |
+| ('VEHICLE_MAKE', 'VEH_MAKE')              | 47                      | <10 to OTHER        |
+| ('VEHICLE_YEAR', 'VEH_YEAR_NUM')          | 48                      | <10 to OTHER        |
+| ('VEHICLE_COLOR', 'VEH_COLOR')            | 16                      | n/a                 |
+| ('VEHICLE_DETAILS', 'VEH_OCCUPANT')       | 3                       | n/a                 |
+| ('VEHICLE_DETAILS.1', 'VEH_STATE')        | 47                      | <10 to OTHER        |
+| ('OFFICER_SUPERVISOR', 'SUPERVISOR_ID')   | 218                     | <10 to OTHER        |
+| ('OFFICER_ID', 'OFFICER_ID')              | 1791                    | <10 to OTHER        |
+| ('OFFICER_ASSIGNMENT', 'OFF_DIST_ID')     | 26                      | <10 to OTHE         |
+| ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')   | 71                      | n/a                 |
+| ('LOCATION_STREET_NUMBER', 'STREET_ID')   | 3155                    | <10 to OTHER        |
+| ('LOCATION_CITY', 'CITY')                 | 22                      | n/a                 |
+| ('Year', 'Year')                          | 5                       | n/a                 |
+| ('Month', 'Month')                        | 12                      | n/a                 |
 
 
-<<COMMENT>>: If this should not be sufficient, then different clusters based on the grouping in chapter clustering will be conducted to create representatives.
+The columns with only two different unique values, do not need to be one hot encoded, since they are already of boolean nature. \
+The feature ('SUBJECT_GENDER', 'SEX') label encoded. \
+Further all unique values below 10 occurences will be grouped to "OTHER", to reduce complexity. This would result in around 2800 columns, when one hot encoded.
+
+
 
 ## Base Statistics
 

@@ -20,7 +20,7 @@ def analyse_feature(df: pd.DataFrame, feature: str) -> pd.DataFrame:
     
     # Limiting the number of values added to the plots to ensure readability.
     # The dataframe is not influenced by this.
-    top_values = value_counts.head(20)
+    top_values = value_counts.head(25)
     high_count_values = value_counts[value_counts / total_count >= 0.01]
     plotted_values = top_values.combine_first(high_count_values)
     plotted_values["MINORS"] = total_count - plotted_values.sum()
