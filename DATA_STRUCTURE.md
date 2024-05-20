@@ -1,17 +1,17 @@
 # Data Structure
 
-The directories sometimes contain files or directories which are doubled. This will be ignored in belows description.
+The directories sometimes contain duplicate files or subdirectories. These duplicates will be ignored in the description below.
 
 ## Abbreviation
 
-| Abbreviation | Translation | Source |
-|--------------|-------------|--------|
-| CPE | Center for Policing Equity | https://www.kaggle.com/datasets/center-for-policing-equity/data-science-for-good |
-| ACS | American Community Survey | https://www.census.gov/programs-surveys/acs |
-| HC | Housing Characteristics | https://www.census.gov/library/publications/1951/dec/hc-5.html
-| UOF | Use of Force | https://policingequity.org/images/pdfs-doc/CPE_SoJ_Race-Arrests-UoF_2016-07-08-1130.pdf | 
-| Dept | Department | |
-| FIO | Field Interrogation and Observation | https://data.boston.gov/dataset/boston-police-department-fio |
+| Abbreviation  | Translation                           | Source                                                                                                                |
+|---------------|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| CPE           | Center for Policing Equity            | [Kaggle - Data Science for Good](https://www.kaggle.com/datasets/center-for-policing-equity/data-science-for-good)    |
+| ACS           | American Community Survey             | [Census - ACS](https://www.census.gov/programs-surveys/acs)                                                           |
+| HC            | Housing Characteristics               | [Census - Publication](https://www.census.gov/library/publications/1951/dec/hc-5.html)                                |
+| UOF           | Use of Force                          | [Policing Equity](https://policingequity.org/images/pdfs-doc/CPE_SoJ_Race-Arrests-UoF_2016-07-08-1130.pdf)            | 
+| Dept          | Department                            |                                                                                                                       |
+| FIO           | Field Interrogation and Observation   | [BPD](https://data.boston.gov/dataset/boston-police-department-fio)                                                   |
 
 ## General Notes
 Link to ACS: https://data.census.gov/
@@ -22,13 +22,13 @@ Link to ACS: https://data.census.gov/
  
 ### raw_data (root directory)
 
-- Contains directories for different departments and cpe-data.
-- The directories in the cpe-data are the same departments with the same files inside.
+- Contains directories for different departments and CPE data.
+- The directories in the CPE data are the same departments with the same files inside.
 
 ### Departments (directories)
-- The directories for each department follow the same structure and contain the same type of subdirectories / files.
+- The directories for each department follow the same structure and contain the same type of subdirectories/files.
 - Contains directories for shapefiles and ACS data.
-- Contains a CSV-file with the data from police.
+- Contains a CSV file with the data from police.
 
 ### Shapefiles (subdirectory)
 - Contain geo-data that can be explored with GIS-software.
@@ -51,7 +51,7 @@ Link to ACS: https://data.census.gov/
 
 ### Police Data (each department directory)
 - The strucutre of the police data files differs from department to department.
-- TThe file names vary, though "UOF" is often appears in the filename, indicating the focus on "use of force".
+- TThe file names vary, though "UOF" often appears in the filename, indicating the focus on "use of force".
 
 - Feature analysis:
     - The files contain different features, totaling 106 unique feature names.

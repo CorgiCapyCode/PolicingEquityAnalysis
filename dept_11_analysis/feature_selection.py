@@ -100,6 +100,7 @@ def group_insignificant_values(df: pd.DataFrame, feature_name: str):
         df[feature_name] = df[feature_name].astype(str)
         unique_values = [str(val) for val in unique_values]
         df.loc[df[feature_name].isin(unique_values), feature_name] = "OTHER"
+
         
 def label_encode_feature(df: pd.DataFrame, feature_name: str):
     label_encoder = LabelEncoder()
@@ -120,3 +121,5 @@ def min_max_scaler(df: pd.DataFrame, feature_name: str):
     scaler = MinMaxScaler()
     scaled_values = scaler.fit_transform(df[[feature_name]])
     df[feature_name] = scaled_values
+    
+# endregion

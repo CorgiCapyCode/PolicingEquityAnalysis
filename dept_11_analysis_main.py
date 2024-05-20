@@ -1,6 +1,8 @@
 import pandas as pd
 
-from dept_11_analysis.data_pre_filtering import redundant_feature_filtering, delete_duplicated_data_points
+from data_exploration.data_pre_filtering import pre_filtering_dataset
+
+# from dept_11_analysis.data_pre_filtering import redundant_feature_filtering, delete_duplicated_data_points
 from dept_11_analysis.data_cleaning import feature_value_cleaning, get_unique_value_df_for_features, save_dataframes_to_csv
 from dept_11_analysis.feature_filtering_2 import further_feature_filtering
 from dept_11_analysis.feature_selection import feature_selection, feature_scaling
@@ -12,9 +14,6 @@ def read_csv_file(path) -> pd.DataFrame:
     return pd.read_csv(path, header=[0, 1])
 
 def save_df_to_csv(df: pd.DataFrame, output_filename: str):
-    '''
-    Saves the dataframe as CSV-file.
-    '''
     df.to_csv(output_filename, index=True, mode="w")
 
 
@@ -25,14 +24,22 @@ def dept_11_analysis_main():
     path = "raw_data/Dept_11-00091/11-00091_Field-Interviews_2011-2015.csv"    
     df = read_csv_file(path)
 
-    # region - Feature and Data Pre-Filtering
+    print("------------------------------------")
     print("Start Feature and Data Pre-Filtering")
-    redundant_feature_filtering(df=df, show_results=show_results)
-    delete_duplicated_data_points(df=df, show_results=show_results)
-    print("End Feature and Data Pre-Filtering")
-    # endregion
-    # region - Data Cleaning
+    print("------------------------------------")
+    # Find redundant columns and delete them.
+    # Find duplicanted data rows and delete them.
+    pre_filtering_dataset(df=df, show_results=show_results)
+    
+    if show_results:
+        df.info()
+        save_df_to_csv(df=df, output_filename="data_exploration/pre_filtered_dataframe.csv")
+        print("Saved results of feature and data pre-filtering in /data_exploration/pre_filtered_dataframe.csv")
+
+    print("------------------------------------")
     print("Start Data Cleaning")
+    print("------------------------------------")
+
     simple_feature_value_modification_list = [
         (("SUBJECT_GENDER", "SEX"), [("UNKNOWN", pd.NA)]),
         (("SUBJECT_RACE", "DESCRIPTION"), [("NO DATA ENTERED", pd.NA)]), 
@@ -68,7 +75,7 @@ def dept_11_analysis_main():
         save_df_to_csv(df=df_complete_values, output_filename="dept_11_analysis/data_files/only_complete_after_cleaning.csv")
         save_df_to_csv(df=df, output_filename="dept_11_analysis/data_files/after_data_cleaning.csv")
     print("End Data Cleaning")
-    # endregion
+
     
     # region - Feature Filtering - 2nd iteration
     print("Start Featre Filtering - 2nd iteration")
@@ -140,11 +147,11 @@ def dept_11_analysis_main():
     df.info()
     save_df_to_csv(df=df, output_filename="prepared_dataframe.csv")    
 
-
     # region - Clustering
 
     
     print("Start Clustering")
+    
     if show_results:
         print("Input stats for Clustering")
         df.info()
@@ -152,7 +159,8 @@ def dept_11_analysis_main():
         save_dataframes_to_csv(dict_with_df=clustering_unique_counts, name="final_unique_values", sub_directory_name="final_values")
         print("Input unique value list for clustering:")
         print(clustering_unique_values)
-    testing = clustering(df=df)
+    
+    testing = clustering(df=df, run_type=3)
     save_df_to_csv(df=testing, output_filename="testing_compl.csv")
 
     

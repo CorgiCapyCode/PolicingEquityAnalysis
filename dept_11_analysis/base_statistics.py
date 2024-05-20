@@ -24,6 +24,7 @@ def analyse_feature(df: pd.DataFrame, feature: str) -> pd.DataFrame:
     high_count_values = value_counts[value_counts / total_count >= 0.01]
     plotted_values = top_values.combine_first(high_count_values)
     plotted_values["MINORS"] = total_count - plotted_values.sum()
+    plt.rcParams["font.family"] = "DejaVu Sans"
     
     plt.figure(figsize=(16, 8))
     plotted_values.plot(kind="bar", color="skyblue")
