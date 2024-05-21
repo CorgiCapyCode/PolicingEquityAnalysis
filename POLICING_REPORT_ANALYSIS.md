@@ -127,9 +127,8 @@ Remaining data points: 149,809.
 
 ## Data Cleaning
 
-### Feature value pre-check
-
-Using the unique values incl. counts per feature results in:
+List of unique values incl. common placeholders for n/a values. \
+In () values are not for sure placeholders. \
 
 | #   | Feature                                                    | Non-Null Count | Unique_Values  | n/a placeholder  | Needs processing          | Suspected correlation |
 |-----|------------------------------------------------------------|----------------|----------------|------------------|---------------------------|-----------------------|
@@ -169,9 +168,7 @@ Using the unique values incl. counts per feature results in:
 RNP: Remove not plausible       \
 RP: Replace Placeholder         \
 
-### Feature value cleaning
-
-#### Features with no changes
+### Features that are not cleaned:
 (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM)   \
 (INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)  \
 (LOCATION_DISTRICT, DIST)               \
@@ -186,7 +183,7 @@ RP: Replace Placeholder         \
 (OFFICER_ASSIGNMENT.1, OFF_DIST)        \
 (LOCATION_STREET_NUMBER, STREET_ID)     \
 
-#### Modified features
+### Processed features and doings:
 - (SUBJECT_GENDER, SEX)
     - Replace UNKNWON with NA-value
     - The sex of a subject should be known. It can be assumed that the entry is missing.
@@ -230,7 +227,7 @@ RP: Replace Placeholder         \
 - (INCIDENT_REASON, STOP_REASONS)
     - Replaced OTHER (SPECIFY) with OTHER
 
-#### Vehicle related features
+### Vehicle related features
 - The state is the only feature without missing entries (empty), but includes 99.456 NO DATA ENTERED and 10673 OTHER values.
 - Some other vehicle related features show entries (e.g. "make" with 717 entries)
 - The same applies for the other features, although occupant and model have no NO DATA ENTERED entries, but much more missing entries.
@@ -243,9 +240,49 @@ RP: Replace Placeholder         \
     - The remaining differences are often based on a single entry (in the original unique entry list 90% of the values have less than 10 entries).
     - A further processing is not conducted for this project.
 
-#### Dropping data points
+### Dropping data points
 For dropping data points a threshold of 30% is set. All data points having less than 30% non-NaN values will be dropped.
 This applies to 0 data points. 
+
+
+### New Unique Feature List
+
+| Feature                                       | Unique Value  | Delta |
+|-----------------------------------------------|---------------|-------|
+| INCIDENT_UNIQUE_IDENTIFIER                    | 149809        | 0     |
+| INCIDENT_UNIQUE_IDENTIFIER.1                  | 149809        | 0     |
+| SUBJECT_GENDER                                | 2             | -1    |
+| LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION  | 33220         | -5140 |
+| LOCATION_DISTRICT                             | 24            | 0     |
+| LOCATION_DISTRICT.1                           | 24            | 0     |
+| INCIDENT_DATE                                 | 1668          | -472  |
+| SUBJECT_DETAILS                               | 3             | 0     |
+| SUBJECT_RACE                                  | 7             | -1    |
+| SUBJECT_DETAILS.1                             | 86107         | -16020|
+| SUBJECT_DETAILS.2                             | 9             | -1    |
+| UNKNOWN_FIELD_TYPE                            | 26            | 0     |
+| UNKNOWN_FIELD_TYPE                            | 2             | 0     |
+| SEARCH_CONDUCTED                              | 3             | 0     |
+| SEARCH_REASON                                 | 3             | 0     |
+| INCIDENT_REASON                               | 6             | 0     |
+| INCIDENT_REASON.1                             | 115           | -107  |
+| DISPOSITION                                   | 7             | 0     |
+| VEHICLE_MAKE                                  | 47            | 0     |
+| VEHICLE_YEAR                                  | 48            | -3    |
+| VEHICLE_COLOR                                 | 16            | 0     |
+| VEHICLE_MODEL                                 | 1526          | -480  |
+| VEHICLE_DETAILS                               | 3             | +1    |
+| VEHICLE_DETAILS.1                             | 47            | -1    |
+| OFFICER_SUPERVISOR                            | 218           | -1    |
+| OFFICER_ID                                    | 1791          | -2    |
+| OFFICER_ASSIGNMENT                            | 26            | 0     |
+| OFFICER_ASSIGNMENT.1                          | 26            | 0     |
+| OFFICER_ETHNICITY                             | 1101          | 0     |
+| OFFICER_AGE                                   | 71            | -48   |
+| LOCATION_STREET_NUMBER                        | 3155          | 0     |
+| LOCATION_CITY                                 | 22            | -1    |
+
+
 
 
 ## Feature Filtering - 2nd iteration

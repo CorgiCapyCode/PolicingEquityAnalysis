@@ -10,7 +10,7 @@ from sklearn.metrics import silhouette_score
 def clustering(df: pd.DataFrame, run_type: int =2):
     
     # TEMP SAMPLE
-    sample_df = df.sample(frac=0.25, random_state=17)
+    sample_df = df.sample(frac=0.3, random_state=17)
     # sample_df = df
 
     if run_type == 1:
@@ -85,42 +85,79 @@ def clustering(df: pd.DataFrame, run_type: int =2):
         group_date_df = sample_df[date_columns].copy()
         
         print("Run Subject cluster")
-        expanded_sample_df, subject_cluster_information = grouped_df_clustering(groupded_df=group_subject_df, group_name="subject", original_df=sample_df)
+        expanded_sample_df, subject_sil_kmeans, subject_sil_gmm = grouped_df_clustering(grouped_df=group_subject_df, group_name="subject", original_df=sample_df)
         print("Run vehicle cluster")
-        expanded_sample_df, vehicle_cluster_information = grouped_df_clustering(groupded_df=group_vehicle_df, group_name="vehicle", original_df=expanded_sample_df)
+        expanded_sample_df, vehicle_sil_kmeans, vehicle_sil_gmm = grouped_df_clustering(grouped_df=group_vehicle_df, group_name="vehicle", original_df=expanded_sample_df)
         print("Run location cluster")
-        expanded_sample_df, location_cluster_information = grouped_df_clustering(groupded_df=group_location_df, group_name="location", original_df=expanded_sample_df)
+        expanded_sample_df, location_sil_kmeans, location_sil_gmm = grouped_df_clustering(grouped_df=group_location_df, group_name="location", original_df=expanded_sample_df)
         print("Run officer cluster")
-        expanded_sample_df, officer_cluster_information = grouped_df_clustering(groupded_df=group_officer_df, group_name="officer", original_df=expanded_sample_df)
+        expanded_sample_df, officer_sil_kmeans, officer_sil_gmm = grouped_df_clustering(grouped_df=group_officer_df, group_name="officer", original_df=expanded_sample_df)
         print("run action cluster")
-        expanded_sample_df, action_cluster_information = grouped_df_clustering(groupded_df=group_action_df, group_name="action", original_df=expanded_sample_df)
+        expanded_sample_df, action_sil_kmeans, action_sil_gmm = grouped_df_clustering(grouped_df=group_action_df, group_name="action", original_df=expanded_sample_df)
         print("run date cluster")
-        expanded_sample_df, date_cluster_information = grouped_df_clustering(groupded_df=group_date_df, group_name="date", original_df=expanded_sample_df)
-        print("------------------------")
-        print("Subject Cluster Information")
-        print("")
-        print(subject_cluster_information)
-        print("------------------------")
-        print("Vehicle Cluster Information")
-        print("")
-        print(vehicle_cluster_information)
-        print("Location Cluster Information")
-        print("")
-        print(location_cluster_information)
-        print("------------------------")
-        print("Officer Cluster Information")
-        print("")                
-        print(officer_cluster_information)        
-        print("------------------------")
-        print("Action Cluster Information")
-        print("")
-        print(action_cluster_information)        
-        print("------------------------")
-        print("Date Cluster Information")
-        print("")
-        print(date_cluster_information)
+        expanded_sample_df, date_sil_kmeans, date_sil_gmm = grouped_df_clustering(grouped_df=group_date_df, group_name="date", original_df=expanded_sample_df)
+
+        if subject_sil_gmm <= subject_sil_kmeans and 0.66 <= subject_sil_kmeans:
+            print("For Subject: KMEANs")
+            subject_moded_df = update_df_information_with_group_clusters(df=expanded_sample_df, cluster_column=("subject_Cluster_K_Means", ""), feature_columns=subject_columns)
+        elif 0.66 <= subject_sil_gmm:
+            print("For Subject: GMM")
+            subject_moded_df = update_df_information_with_group_clusters(df=expanded_sample_df, cluster_column=("subject_Cluster_GMM", ""), feature_columns=subject_columns)
+        else:
+            print("None - no good clusters for subject")
+            subject_moded_df = expanded_sample_df
+             
+        if vehicle_sil_gmm <= vehicle_sil_kmeans and 0.66 <= subject_sil_kmeans:
+            print("For Vehicle: KMEANs")
+            vehicle_moded_df = update_df_information_with_group_clusters(df=subject_moded_df, cluster_column=("vehicle_Cluster_K_Means", ""), feature_columns=vehicle_columns)
+        elif 0.66 <= vehicle_sil_gmm:
+            print("For Vehicle: GMM")
+            vehicle_moded_df = update_df_information_with_group_clusters(df=subject_moded_df, cluster_column=("vehicle_Cluster_GMM", ""), feature_columns=vehicle_columns)
+        else:
+            print("None - no good clusters for vehicle")
+            vehicle_moded_df = subject_moded_df
+            
+        if location_sil_gmm <= location_sil_kmeans and 0.66 <= subject_sil_kmeans:
+            print("For Location: KMEANs")
+            location_moded_df = update_df_information_with_group_clusters(df=vehicle_moded_df, cluster_column=("location_Cluster_K_Means", ""), feature_columns=location_columns)
+        elif 0.66 <= location_sil_gmm:
+            print("For Location: GMM")
+            location_moded_df = update_df_information_with_group_clusters(df=vehicle_moded_df, cluster_column=("location_Cluster_GMM", ""), feature_columns=location_columns)
+        else:
+            print("None - no good clusters for location")
+            location_moded_df = vehicle_moded_df
+            
+        if action_sil_gmm <= action_sil_kmeans and 0.66 <= subject_sil_kmeans:
+            print("For Action: KMEANs")
+            action_moded_df = update_df_information_with_group_clusters(df=location_moded_df, cluster_column=("action_Cluster_K_Means", ""), feature_columns=action_columns)
+        elif 0.66 <= action_sil_gmm:
+            print("For Action: GMM")
+            action_moded_df = update_df_information_with_group_clusters(df=location_moded_df, cluster_column=("action_Cluster_K_GMM", ""), feature_columns=action_columns)
+        else:
+            print("None - no good clusters for action")
+            action_moded_df = location_moded_df
         
-        return expanded_sample_df
+        if officer_sil_gmm <= officer_sil_kmeans and 0.66 <= subject_sil_kmeans:
+            print("For Officer: KMEANs")
+            officer_moded_df = update_df_information_with_group_clusters(df=action_moded_df, cluster_column=("officer_Cluster_K_Means", ""), feature_columns=officer_columns)
+        elif 0.66 <= officer_sil_gmm:
+            print("For Officer: GMM")
+            officer_moded_df = update_df_information_with_group_clusters(df=action_moded_df, cluster_column=("officer_Cluster_GMM", ""), feature_columns=officer_columns)
+        else:
+            print("None - no good clusters for officer")
+            officer_moded_df = action_moded_df
+            
+        if date_sil_gmm <= date_sil_kmeans and 0.66 <= subject_sil_kmeans:
+            print("For Date: KMEANs")
+            date_moded_df = update_df_information_with_group_clusters(df=officer_moded_df, cluster_column=("date_Cluster_K_Means", ""), feature_columns=date_columns)
+        elif 0.66 <= date_sil_kmeans:
+            print("For Date: GMM")
+            date_moded_df = update_df_information_with_group_clusters(df=officer_moded_df, cluster_column=("date_Cluster_GMM", ""), feature_columns=date_columns)
+        else:
+            print("None - no good clusters for date")
+            date_moded_df = officer_moded_df
+
+            return date_moded_df
 
 
 def one_hot_encoding(df: pd.DataFrame) -> pd.DataFrame:
@@ -135,6 +172,7 @@ def one_hot_encoding(df: pd.DataFrame) -> pd.DataFrame:
     # Ensures that all columns are floats
     ohe_df = ohe_df.astype(float)
     return ohe_df
+
 
 def visualization_of_clusters(df: pd.DataFrame, clusters: np.ndarray, name: str):
     # Perform t-SNE for dimensionality reduction
@@ -211,7 +249,7 @@ def run_complete_feature_space(sample_df: pd.DataFrame):
         return sample_df, k_means_nucleus_df, gmm_nucleus_df
 
 
-def kelbow_visualizer(df: pd.DataFrame, k_range: tuple =(2,80)):
+def kelbow_visualizer(df: pd.DataFrame, k_range: tuple =(2,50)):
     model = KMeans(random_state=17)
     visualizer = KElbowVisualizer(model, k=k_range, timings=False)
     visualizer.fit(df)
@@ -235,7 +273,7 @@ def kmeans_cluster(df: pd.DataFrame, k_clusters: int):
     
 def optimal_gmm(df: pd.DataFrame) -> int:
     bics = []
-    n_components_range = range(2, 80)
+    n_components_range = range(2, 50)
     
     for n in n_components_range:
         print(f"Checking for n: {n}")
@@ -275,9 +313,9 @@ def dbscan_cluster(df: pd.DataFrame, eps: float =0.2, min_samples: int  =5):
     return labels
 
 
-def grouped_df_clustering(groupded_df: pd.DataFrame, group_name: str, original_df: pd.DataFrame):
+def grouped_df_clustering(grouped_df: pd.DataFrame, group_name: str, original_df: pd.DataFrame):
     cluster_information = {}
-    ohe_df = one_hot_encoding(df=groupded_df)
+    ohe_df = one_hot_encoding(df=grouped_df)
     elbow_value = kelbow_visualizer(ohe_df)
     labels_kmeans = kmeans_cluster(df=ohe_df, k_clusters=elbow_value) 
     key = f"{group_name}_elbow_value"
@@ -302,6 +340,8 @@ def grouped_df_clustering(groupded_df: pd.DataFrame, group_name: str, original_d
     cluster_information[key] = silhouette_kmeans
     key = f"{group_name}_sil_score_gmm"
     cluster_information[key] = silhouette_gmm
+    print(f"{group_name} Silhouette Scores:")
+    print(cluster_information)
     
     # groupded_df["Cluster_K_Means"] = labels_kmeans
     # groupded_df["Cluster_GMM"] = labels_gmm
@@ -312,15 +352,22 @@ def grouped_df_clustering(groupded_df: pd.DataFrame, group_name: str, original_d
     original_df[f"{group_name}_Cluster_K_Means"] = labels_kmeans
     original_df[f"{group_name}_Cluster_GMM"] = labels_gmm
     
-    return original_df, cluster_information #, grouped_kmeans_nucleus_df, grouped_gmm_nucleus_df
+    return original_df, silhouette_kmeans, silhouette_gmm
 
-def update_df_information_with_group_clusters(df: pd.DataFrame, labels: pd.Series, cluster_columns):
-    cluster_nucleus = df.groupby(labels).agg(lambda x: x.mode().iloc[0])
+
+def update_df_information_with_group_clusters(df: pd.DataFrame, cluster_column: str, feature_columns: list) -> pd.DataFrame:
+    moded_df = df.copy()
     
-    for cluster_label, nucleuis_values in cluster_nucleus.iterrows():
-        for column_group in cluster_columns:
-            feature_group_columns = [column[0] for column in column_group]
-            cluster_data = df[df.index == cluster_label]
+    cluster_nucleus = df.groupby(cluster_column).agg(lambda x: x.mode().iloc[0])
+    
+    for cluster_label, nucleus_values in cluster_nucleus.iterrows():
+        cluster_data = moded_df[moded_df[cluster_column] == cluster_label]
+        
+        for column in feature_columns:
+            moded_df.loc[moded_df[cluster_column] == cluster_label, column] = nucleus_values[column]
             
-            df.loc[df.index == cluster_label, feature_group_columns] = nucleuis_values[feature_group_columns].values
-    return df
+    return moded_df
+
+
+def second_clustering(df: pd.DataFrame) -> pd.DataFrame:
+    pass

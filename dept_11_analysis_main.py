@@ -1,14 +1,16 @@
 import pandas as pd
 
 from data_exploration.data_pre_filtering import pre_filtering_dataset
+from data_cleaning.data_clean import feature_value_cleaning, get_unique_value_df_for_features, save_dataframes_to_csv
 
-# from dept_11_analysis.data_pre_filtering import redundant_feature_filtering, delete_duplicated_data_points
-from dept_11_analysis.data_cleaning import feature_value_cleaning, get_unique_value_df_for_features, save_dataframes_to_csv
+
+
+
 from dept_11_analysis.feature_filtering_2 import further_feature_filtering
 from dept_11_analysis.feature_selection import feature_selection, feature_scaling
 from dept_11_analysis.data_imputing import data_imputing
 from dept_11_analysis.base_statistics import calculate_univariate_statistics, calculate_multivariate_statistics
-from dept_11_analysis.clustering_functions import clustering
+from dept_11_analysis.clustering_functions import clustering, second_clustering
 
 def read_csv_file(path) -> pd.DataFrame:
     return pd.read_csv(path, header=[0, 1])
@@ -18,7 +20,7 @@ def save_df_to_csv(df: pd.DataFrame, output_filename: str):
 
 
 def dept_11_analysis_main():
-    show_results = False
+    show_results = True
     threshold_to_drop = 30
     
     path = "raw_data/Dept_11-00091/11-00091_Field-Interviews_2011-2015.csv"    
@@ -39,7 +41,10 @@ def dept_11_analysis_main():
     print("------------------------------------")
     print("Start Data Cleaning")
     print("------------------------------------")
-
+    
+    # Features that will use simple value adjustments.
+    # 1. Feature name
+    # 2. List of pairs (old value -> new value)
     simple_feature_value_modification_list = [
         (("SUBJECT_GENDER", "SEX"), [("UNKNOWN", pd.NA)]),
         (("SUBJECT_RACE", "DESCRIPTION"), [("NO DATA ENTERED", pd.NA)]), 
@@ -60,8 +65,15 @@ def dept_11_analysis_main():
         (("LOCATION_CITY", "CITY"), [("NO DATA ENTERED", pd.NA)]),
         (("INCIDENT_REASON.1", "FIOFS_REASONS"), [("INVESTIGATE", "INVESTIGATION")])
     ]
-           
-    df = feature_value_cleaning(
+    # Apply standard feature cleaning by replacing specific value (above) with specific value (above)
+    # Run special cleanings for:
+    # ("LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION", "LOCATION")
+    # Date and Time
+    # Clothing
+    # Vehicle Features
+    # Ages
+    # FIOFS_Reasons
+    original_unique_value_counts, num_unique_values, df, new_unique_value_counts, new_num_unique_values = feature_value_cleaning(
         df=df,
         threshold=threshold_to_drop,
         feature_value_modification=simple_feature_value_modification_list,
@@ -69,16 +81,31 @@ def dept_11_analysis_main():
     )
     
     if show_results:
+        print("")
+        print("*******************")
+        print("Results from data_clean.py")
+        print("*******************")
+        print("")
+        save_dataframes_to_csv(dict_with_df=original_unique_value_counts, name="_original_unique_values", sub_directory_name="data_cleaning/original_unique_value_lists")
+        print("Original unique value lists saved in data_cleaning/original_unique_value_lists")
+        print("Number of unique values:")
+        print(num_unique_values)
+        save_dataframes_to_csv(dict_with_df=new_unique_value_counts, name="_new_unique_values", sub_directory_name="data_cleaning/cleaned_unique_value_lists")
+        print("Updated unique value lists saved in data/cleaning/cleaned_unique_value_lists")
+        print("Number of new unique values:")
+        print(new_num_unique_values)
+        
         num_complete_data_points = df.dropna().shape[0]
         print(f"Number of data points with no missing data: {num_complete_data_points}")
         df_complete_values = df.dropna(how="all")
-        save_df_to_csv(df=df_complete_values, output_filename="dept_11_analysis/data_files/only_complete_after_cleaning.csv")
-        save_df_to_csv(df=df, output_filename="dept_11_analysis/data_files/after_data_cleaning.csv")
-    print("End Data Cleaning")
-
+        save_df_to_csv(df=df_complete_values, output_filename="data_cleaning/data_points_with_complete_data.csv")
+        save_df_to_csv(df=df, output_filename="data_cleaning/dataframe_after_cleaning.csv")    
     
-    # region - Feature Filtering - 2nd iteration
-    print("Start Featre Filtering - 2nd iteration")
+    return None
+    print("------------------------------------")
+    print("Start Feature Filtering")
+    print("------------------------------------") 
+  
     further_feature_filtering(df=df, show_results=show_results)
     if show_results:
         new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
@@ -163,6 +190,8 @@ def dept_11_analysis_main():
     testing = clustering(df=df, run_type=3)
     save_df_to_csv(df=testing, output_filename="testing_compl.csv")
 
+    final_df = second_clustering(testing)
+    
     
     print("End Clustering")
     # endregion
