@@ -2,15 +2,13 @@ import pandas as pd
 
 from data_exploration.data_pre_filtering import pre_filtering_dataset
 from data_cleaning.data_clean import feature_value_cleaning, get_unique_value_df_for_features, save_dataframes_to_csv
+from feature_selec.feature_selection import select_features
+from final_preparation.final_prep import feature_final_preparation, feature_scaling
+from data_imputation.data_imputing import impute_data
+from stats.base_statistics import calculate_univariate_statistics, calculate_multivariate_statistics
 
 
-
-
-from dept_11_analysis.feature_filtering_2 import further_feature_filtering
-from dept_11_analysis.feature_selection import feature_selection, feature_scaling
-from dept_11_analysis.data_imputing import data_imputing
-from dept_11_analysis.base_statistics import calculate_univariate_statistics, calculate_multivariate_statistics
-from dept_11_analysis.clustering_functions import clustering, second_clustering
+from clustering.data_clustering import clustering, second_clustering
 
 def read_csv_file(path) -> pd.DataFrame:
     return pd.read_csv(path, header=[0, 1])
@@ -20,7 +18,7 @@ def save_df_to_csv(df: pd.DataFrame, output_filename: str):
 
 
 def dept_11_analysis_main():
-    show_results = True
+    show_results = False
     threshold_to_drop = 30
     
     path = "raw_data/Dept_11-00091/11-00091_Field-Interviews_2011-2015.csv"    
@@ -101,101 +99,111 @@ def dept_11_analysis_main():
         save_df_to_csv(df=df_complete_values, output_filename="data_cleaning/data_points_with_complete_data.csv")
         save_df_to_csv(df=df, output_filename="data_cleaning/dataframe_after_cleaning.csv")    
     
-    return None
+
     print("------------------------------------")
-    print("Start Feature Filtering")
+    print("Start Feature Selection")
     print("------------------------------------") 
-  
-    further_feature_filtering(df=df, show_results=show_results)
+    
+    # Drop features with inconsistent data.
+    # Compare pairs of features and drop them.
+    # For comparison: Use three methods of Chi-Square Test
+    select_features(df=df, show_results=show_results)
+    
     if show_results:
         new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
         print(f"New unique value list: {new_num_unique_values}")        
         num_complete_data_points = df.dropna().shape[0]
-        print(f"Number of data points with no missing data: {num_complete_data_points}")
-    print("End Feature Filtering - 2nd iteration")
-    # endregion
-    
-    # region - Imputation
-    print("Start Imputation")    
-    if show_results:
+        print(f"Number of data points with no missing data after feature selection: {num_complete_data_points}")
         df.info()
-    data_imputing(df=df, show_results=show_results)
+        save_df_to_csv(df=df, output_filename="feature_selec/df_with_selected_features.csv")
+
+    print("------------------------------------")
+    print("Start Imputation")
+    print("------------------------------------") 
+  
+    # Simple Probabilistic Imputer:
+    # Imputes the missing values based on the probability distribution of values of a feature.
+    # Multivariate imputing methods:
+    # Complex Imputer:
+    # Imputes the missing values based on the probability distribution of exclusive values of a feature. Ignores specific values.
+    # Dependent Imputer:
+    # Ensures data consistency by imputing a specific value based on the value of another column.
+    # In this case: Ensure that the searched object cannot be a vehicle (value v or vp) if there is no vehicle involved.
+    # Multivariate Bayesian Imputer:
+    # Imputes values using the conditional probability distribution of a feature and a conditional feature.
+    impute_data(df=df, show_results=show_results)
+    
     if show_results:
         print("DF info:")
         print(df.info())
-    print("End Imputation")
-    # endregion
+        save_df_to_csv(df=df, output_filename="data_imputation/df_with_imputed_data.csv")
 
-    # region - Feature Selection
-    print("Start Feature Selection")
-    comparison_results = feature_selection(df=df, run_all=False)
-    if comparison_results is None:
+    print("------------------------------------")
+    print("Start Final Preparation")
+    print("------------------------------------")
+    run_comparison = True
+
+    mutual_comparison_results, chi_comparison_results = feature_final_preparation(df=df, run_all=run_comparison)
+    
+    if mutual_comparison_results is None:
         pass
-    elif not comparison_results.empty:
-        save_df_to_csv(df=comparison_results, output_filename="comparison_results.csv")
+    elif not mutual_comparison_results.empty:
+        print("Saving mutual feature comparison results.")
+        save_df_to_csv(df=mutual_comparison_results, output_filename="test/mutual_feature_comparison_results.csv")
 
+    if chi_comparison_results is None:
+        pass
+    elif not chi_comparison_results.empty:
+        print("Saving chi feature comparison results.")
+        save_df_to_csv(df=chi_comparison_results, output_filename="test/chi_feature_comparison_results.csv")    
+    
+    
     if show_results:
         print("")
         print("FINAL FEATURE INFORMATION")
         print("")
         new_unique_value_counts, new_num_unique_values = get_unique_value_df_for_features(df=df)
         print(f"New unique value list: {new_num_unique_values}")     
-    
-          
-   
-    print("End Feature Selection")
-    # endregion
-    
-    # region - Base statistics
+        
+      
+    print("------------------------------------")
     print("Start Base Statistics")
+    print("------------------------------------") 
     
     univariate_statistics = calculate_univariate_statistics(df=df)
     if show_results:
         for key, value in univariate_statistics.items():
-            output_filename = f"dept_11_analysis/statistics_and_graphs/univariate/univariate_statistics_{key}.csv"
+            output_filename = f"statistics/statistic_values/univariate_statistics_{key}.csv"
             save_df_to_csv(df=value, output_filename=output_filename)
     
-    # Creates 2D plots (option for 3D as well)
+    # Creates 2D plots (option for 3D as well) -> time intensive process!
     # calculate_multivariate_statistics(df=df)
-    print("End Base Statistics")
-    
-    # endregion
-    # region - Feature Scaling
-    
-    feature_scaling(df=df)     
-    
-    # endregion
-    
-    print("")
-    print("################################")
-    print("Final df-info before clustering:")
-    print("################################")
-    print("")
-    df.info()
-    save_df_to_csv(df=df, output_filename="prepared_dataframe.csv")    
 
-    # region - Clustering
+    print("------------------------------------")
+    print("Start Feature Scaling")
+    print("------------------------------------") 
 
-    
+    feature_scaling(df=df)
+    save_df_to_csv(df=df, output_filename="final_preparation/input_for_clustering.csv")
+
+    print("------------------------------------")
     print("Start Clustering")
-    
-    if show_results:
-        print("Input stats for Clustering")
-        df.info()
-        clustering_unique_counts, clustering_unique_values = get_unique_value_df_for_features(df=df)
-        save_dataframes_to_csv(dict_with_df=clustering_unique_counts, name="final_unique_values", sub_directory_name="final_values")
-        print("Input unique value list for clustering:")
-        print(clustering_unique_values)
-    
-    testing = clustering(df=df, run_type=3)
-    save_df_to_csv(df=testing, output_filename="testing_compl.csv")
+    print("------------------------------------") 
+    # Run types:
+    # 1: The dataframe as it is right now -> No good results. Might crash due to high complexity of dataframe.
+    # 2: The dataframe without STREET_ID and OFFICER_ID. -> No good resutls. Less complex than 1.
+    # 3: Grouping the features. -> Under investigation.
+    run_type = 3
+    clustered_df = clustering(df=df, run_type=run_type)
+    save_df_to_csv(df=clustered_df, output_filename="first_clustering.csv")
 
-    final_df = second_clustering(testing)
+    final_df = second_clustering(clustered_df, run_type=run_type)
     
+    if final_df is None:
+        pass
+    else:
+        save_df_to_csv(final_df, "second_clustering.csv")
     
-    print("End Clustering")
-    # endregion
-
     
 if __name__ == "__main__":
     dept_11_analysis_main()

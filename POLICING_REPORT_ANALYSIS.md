@@ -125,7 +125,7 @@ Data points are checked for duplicants, ignoring the unique identifier features,
 
 Remaining data points: 149,809.
 
-## Data Cleaning
+## 2.2 Data Cleaning
 
 List of unique values incl. common placeholders for n/a values. \
 In () values are not for sure placeholders. \
@@ -244,8 +244,7 @@ RP: Replace Placeholder         \
 For dropping data points a threshold of 30% is set. All data points having less than 30% non-NaN values will be dropped.
 This applies to 0 data points. 
 
-
-### New Unique Feature List
+New unique feature list:
 
 | Feature                                       | Unique Value  | Delta |
 |-----------------------------------------------|---------------|-------|
@@ -281,35 +280,54 @@ This applies to 0 data points.
 | OFFICER_AGE                                   | 71            | -48   |
 | LOCATION_STREET_NUMBER                        | 3155          | 0     |
 | LOCATION_CITY                                 | 22            | -1    |
+| Sum of unique values*                         | 126536        |       |
+
+*without unique identifiers and numerical and ordinal features
+
+## 2.3 Feature Selection
+
+Before the imputation the following features are dropped:
+
+**(INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID):**
+Related features: (INCIDENT_UNIQUE_IDENTIFIER, SEQ_NUM) \
+Reason: Both features are unique identifiers. The features can only be used to identify a single data point, but not for any clustering. \
+The feature will be dropped, since it does not add additional value to have both features. The first identifier is kept to the dataframe to give the oportunity to link any data point with its original value.
+
+**(LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION):**
+Related features: (LOCATION_STREET_NUMBER, STREET_ID) \
+Reason: After the cleanong process the feature still contains 33,220 unique values, while related feature only has 3,155. The feature holds more specific information about the location than the related one does. The decision on which to drop, is based on the trade-off between reducing the complexity and the loss of information. \
+In this case, the decision favors reducing compelxity by removing the feature and not the related one.
+
+**(VEHICLE_MODEL, VEH_MODEL):**
+Related feature: - \
+Reason: After data cleaning the feature still contains inconsistencies, such as variations of writing. Furthermore, it contains different depth of information. \
+Some entries only mention the number of doors (e.g. 4 doors), while other describe the vehicle type more detailed (e.g. Sedan). \
+The effort to clean this feature to an extend that it can be used, is much higher than the possible value that it can bring. Thus, the feature will be dropped.
+
+**(LOCATION_DISTRICT, DIST), (LOCATION_DISTRICT.1, DIST_ID), (OFFICER_ASSIGNMENT.1, OFF_DIST):**
+Related feature: (OFFICER_ASSIGNMENT, OFF_DIST_ID)
+Reason: Due to the feature description it is suspected that these features contain similar information. A pairwise Chi-Square test is applied to prove this. \
+The Chi-Square test is applied in three variations: Using the standard one from the Scipy-Library, using the implementation from Sklearn with label encoding and one hot encoding in advance.
+These three methods lead to slightly different results. To proof the suspicion, the maximum value of the three results is taken and checked: For all tests the max. value is below 0.01, indicating that the features are indeed similar. The three features are dropped, while the related one is kept as the representation of them.
+
+**(OFFICER_ETHNICITY, ETHNICITY):**
+Releated feature: - \
+Reason: The data remains inconsistent and many abbriviations are not interpretable.
+
+**(UNKNOWN_FIELD_TYPE, TERRORISM):**
+Related feature: - \
+Reason: The "yes"-rate of the feature is very low. The information gain is thus low.
+
+**(SUBJECT_DETAILS.1, CLOTHING)**
+Related feature: - \
+Reason: Inconsistent data as for VEH_MODEL. \
 
 
+After dropping these features, 23 features remain in the dataset:
 
-
-## Feature Filtering - 2nd iteration
-Since there are currently two unique identifiers present, the second one will be dropped ((INCIDENT_UNIQUE_IDENTIFIER.1, FIO_ID)).
-
-Although the feature (LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION, LOCATION) contains slightly more information than (LOCATION_STREET_NUMBER, STREET_ID),  \
-it will be dropped. After filtering it still contains around 33,000 unique values in contrast to the 3155 unique values from the street id.
-
-The feature (VEHICLE_MODEL, VEH_MODEL) will be dropped as well, due to its high complexity. Although after processing it has less unique values than e.g. the date, \
-there are still many variations fo writing. Furthermore it contains different depth of information.                                                                 \
-E.g. some mention only the number of doors, while others add the type (Sedan etc.).                                                                                 \
-Cleaning this feature is beyond the scope of this project.
-
-Using the Chi^2 test for the feature numbers #4 and #5 as well as for #26 and #27 show that both pairs are highly correlated with each other.   \
-The test results show that all 4 columns are highly related with each other (p-value ~0.0). Three of them will be dropped:                      \
-(LOCATION_DISTRICT, DIST), (LOCATION_DISTRICT.1, DIST_ID), (OFFICER_ASSIGNMENT.1, OFF_DIST).
-
-The feature (OFFICER_ETHNICITY, ETHNICITY) will be dropped, beacuse the data is not consistent and many abbriviations are not interpretable.
-
-The feature (UNKNOWN_FIELD_TYPE, TERRORISM) will be dropped due to its very low rate of "yes", thus yielding almost no information.
-
-After the 2nd iteration for feature filtering, 23 features remain in the dataset.
-The new list of features including unique values is:
-
-| Features                                    | Count | Drop Reason
-|---------------------------------------------|-------|-------------
-| ('INCIDENT_UNIQUE_IDENTIFIER', 'SEQ_NUM')   | 149809| ignore for clustering
+| Feature                                     | Count |
+|---------------------------------------------|-------|
+| ('INCIDENT_UNIQUE_IDENTIFIER', 'SEQ_NUM')   | 149809|
 | ('SUBJECT_GENDER', 'SEX')                   | 2     |
 | ('INCIDENT_DATE', 'FIO_DATE')               | 1668  |
 | ('SUBJECT_DETAILS', 'PRIORS')               | 3     |
@@ -332,9 +350,35 @@ The new list of features including unique values is:
 | ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')     | 71    |
 | ('LOCATION_STREET_NUMBER', 'STREET_ID')     | 3155  |
 | ('LOCATION_CITY', 'CITY')                   | 22    |
+| Sum of unique values*                       | 5506  |
 
-## Imputation
-After cleaning and filtering the data 4691 data points are complete. All other data points miss at least one value.
+*without unique identifier and numerical and ordinal features
+
+## 2.4 Imputation
+
+Currently only five features have no missing data.
+The mode imputation would change the distributions for some features.
+The data imputation uses four different methods:
+
+SPI - Simple Probabilistic Imputer:
+- Imputing based on the probability distribution of unique values of one feature.
+- Maintains the distribution of feature values.
+- Example: Using mode imputation for (LOCATION_CITY, CITY) would add 68353 times the most common value (Drochester), which increases the representation from around 23.5% to 58.4% in the dataset.
+
+CPI - Complex Probabilistic Imputer:
+- Same as SPI, but does not consider all unique values for imputation.
+- Used for the vehicle-related features to not impute more of "NO VEHICLE INVOLVED" values.
+
+MBI: Multivariate Bayesian Imputer:
+- Imputes values based on the probablity distribution of a value, while taking the value of another feature as condition.
+- Needs SPI afterwards.
+
+DI: Dependent Imputer:
+- Pre-imputer to ensure data correctness.
+- It is used for (SEARCH_CONDUCTED, SEARCH), where the values V or VP cannot occur when there is no vehicle involved.
+- Needs SPI afterwards.
+
+Belows table shows which method is applied to which feature.
 
 | Feature                                 | Non-Null Count | Dtype            | Imputing method | Description                                   |
 |-----------------------------------------|----------------|------------------|-----------------|-----------------------------------------------|
@@ -362,60 +406,47 @@ After cleaning and filtering the data 4691 data points are complete. All other d
 | (LOCATION_STREET_NUMBER, STREET_ID)     | 149809         | int64            | No missing data |                                               |
 | (LOCATION_CITY, CITY)                   | 81456          | object           | MBI -> SPI      | STREET_ID                                     |
 
-SPI: Simple Probalistic Imputer - Uses the probality distribution of the unique values to impute values.
-CPI: Complex Probalistic Imputer - Uses the probability distribution of some unique values to impute values.
-MBI: Multivariante Bayesian Imputer - Uses a Bayesian approach to impute the values based on the conditional probablity of another feature.
-DI: Dependent Imputer - Uses values from other columns that ensure data correctness.
 
-(SUBJECT_RACE, DESCRIPTION) & (SUBJECT_DETAILS.2, COMPLEXION) \
-These two features deal with the subject itself. The probability of the subjects complexion is very likley to be dependet on the race and vice versa.
-
-(OFFICER_SUPERVISOR, SUPERVISOR_ID) & (OFFICER_ASSIGNMENT, OFF_DIST_ID) \
-The officer and supervisor IDs can be considered as related, since they are usually fixed.
-
-(LOCATION_CITY, CITY)   \
-The street IDs relate with the city.
-
-All MBIs are followed by SPI to fill the remaining missing data.
-
-## Feature Selection
+## 2.5	Feature Generation and Value Grouping
 
 The current data contains more than 5,500 unique values, mainly categorical data. Using a clustering algorithm that uses distance metrics would require one hot encoding. This leads to a very complex dataframe.
-To reduce the complexity of this, the following table shows which actions will be done.
+The following table shows the actions taken to reduce the complexity:
 
 
 | Column Name                               | Number of Unique Values | Action              |
 |-------------------------------------------|-------------------------|---------------------|
 | ('INCIDENT_UNIQUE_IDENTIFIER', 'SEQ_NUM') | 149809                  | n/a                 |
 | ('SUBJECT_GENDER', 'SEX')                 | 2                       | Label Encoding      |
+| ('INCIDENT_DATE', 'FIO_DATE')             |                         | Split data and time |              
 | ('SUBJECT_DETAILS', 'PRIORS')             | 3                       | n/a                 |
 | ('SUBJECT_RACE', 'DESCRIPTION')           | 7                       | n/a                 |
-| ('SUBJECT_DETAILS.2', 'COMPLEXION')       | 9                       | <10 to OTHER        |
+| ('SUBJECT_DETAILS.2', 'COMPLEXION')       | 9                       | <25 to OTHER        |
 | ('UNKNOWN_FIELD_TYPE', 'FIOFS_TYPE')      | 26                      | Create Features     |
 | ('SEARCH_CONDUCTED', 'SEARCH')            | 3                       | Create Features     |
 | ('SEARCH_REASON', 'BASIS')                | 3                       | n/a                 |
-| ('INCIDENT_REASON', 'STOP_REASONS')       | 6                       | <10 to OTHER        |
-| ('INCIDENT_REASON.1', 'FIOFS_REASONS')    | 115                     | <10 to OTHER        |
+| ('INCIDENT_REASON', 'STOP_REASONS')       | 6                       | <25 to OTHER        |
+| ('INCIDENT_REASON.1', 'FIOFS_REASONS')    | 115                     | <25 to OTHER        |
 | ('DISPOSITION', 'OUTCOME')                | 7                       | Create Features     |
-| ('VEHICLE_MAKE', 'VEH_MAKE')              | 47                      | <10 to OTHER        |
-| ('VEHICLE_YEAR', 'VEH_YEAR_NUM')          | 48                      | <10 to OTHER        |
+| ('VEHICLE_MAKE', 'VEH_MAKE')              | 47                      | <25 to OTHER        |
+| ('VEHICLE_YEAR', 'VEH_YEAR_NUM')          | 48                      | <25 to OTHER        |
 | ('VEHICLE_COLOR', 'VEH_COLOR')            | 16                      | n/a                 |
 | ('VEHICLE_DETAILS', 'VEH_OCCUPANT')       | 3                       | n/a                 |
-| ('VEHICLE_DETAILS.1', 'VEH_STATE')        | 47                      | <10 to OTHER        |
-| ('OFFICER_SUPERVISOR', 'SUPERVISOR_ID')   | 218                     | <10 to OTHER        |
-| ('OFFICER_ID', 'OFFICER_ID')              | 1791                    | <10 to OTHER        |
-| ('OFFICER_ASSIGNMENT', 'OFF_DIST_ID')     | 26                      | <10 to OTHE         |
+| ('VEHICLE_DETAILS.1', 'VEH_STATE')        | 47                      | <25 to OTHER        |
+| ('OFFICER_SUPERVISOR', 'SUPERVISOR_ID')   | 218                     | <25 to OTHER        |
+| ('OFFICER_ID', 'OFFICER_ID')              | 1791                    | <25 to OTHER        |
+| ('OFFICER_ASSIGNMENT', 'OFF_DIST_ID')     | 26                      | <25 to OTHE         |
 | ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')   | 71                      | Scaling             |
-| ('LOCATION_STREET_NUMBER', 'STREET_ID')   | 3155                    | <10 to OTHER        |
+| ('LOCATION_STREET_NUMBER', 'STREET_ID')   | 3155                    | <25 to OTHER        |
 | ('LOCATION_CITY', 'CITY')                 | 22                      | n/a                 |
-| ('Year', 'Year')                          | 5                       | Scaling             |
-| ('Month', 'Month')                        | 12                      | Scaling             |
 
 
-The columns with only two different unique values, do not need to be one hot encoded, since they are already of boolean nature. \
-The feature ('SUBJECT_GENDER', 'SEX') label encoded. \
-Further all unique values below 25 occurences will be grouped to "OTHER", to reduce complexity.
-The age, year, month and day have been scaled using the min-max scaler.
+Label Encoding: The feature is already of binary nature, and thus label encoded.
+
+< 25 to OTHER: Values occuring less than 25 times, are grouped together to "OTHER" to reduce complexity.
+
+Create Features: The unique values are a mixture of abbirivations in different combiantions. Split these abbriviations to a single feature reduces the complexity by maintaining all information. E.g. ('SEARCH_CONDUCTED', 'SEARCH') contains either V (vehicle) P (person) or VP (Vehicle and Person). One hot encoding would end in three features, V, P and VP. Since VP is only a combiantion of V and P, it is not needed.
+
+Split date and time: Splits ('INCIDENT_DATE', 'FIO_DATE') to year, month, day.
 
 ## Base Statistics
 
