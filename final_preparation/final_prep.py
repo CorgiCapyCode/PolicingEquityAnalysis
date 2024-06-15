@@ -12,7 +12,6 @@ def feature_final_preparation(df: pd.DataFrame, run_all: bool =True):
     split_date_and_time(df=df, feature=("INCIDENT_DATE", "FIO_DATE"))
     # Splitting features that use combinations of shortcuts (e.g. F, I, FI, ...)
     char_feature_split(df=df, feature_name=('UNKNOWN_FIELD_TYPE', 'FIOFS_TYPE'))
-    char_feature_split(df=df, feature_name=('SEARCH_CONDUCTED', 'SEARCH'))
     char_feature_split(df=df, feature_name=('DISPOSITION', 'OUTCOME'))
     
     # Group insignificant features <25 occurences
@@ -80,13 +79,13 @@ def mutual_info_comparison(df: pd.DataFrame, feature_1: str, feature_2: str) -> 
 
     
 def plot_comparison_results(df: pd.DataFrame):
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(30, 30))
     plt.rcParams["font.family"] = "DejaVu Sans"
     sns.heatmap(df.astype(float), cmap="coolwarm", annot=True, fmt=".2f", linewidths=0.5)
     plt.title("Feature Mutual Information Comparison Results")
     plt.xlabel("Features")
     plt.ylabel("Features")
-    plt.savefig("test/comparison_heatmap.jpg")
+    plt.savefig("final_preparation/comparison_heatmap.jpg")
 
 
 def split_date_and_time(df: pd.DataFrame, feature: str):

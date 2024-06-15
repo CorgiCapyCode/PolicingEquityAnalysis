@@ -6,6 +6,26 @@ This repository might not run on a Windows machine. It should work fine on Ubunt
 This repository analysis the dataset "Data Science for Good: Center for Policing Equity"
 available at: [Kaggle - Data Science for Good](https://www.kaggle.com/datasets/center-for-policing-equity/data-science-for-good)
 
+## Supporting Documents
+The following files contain additional information: \
+### [DATA_STRUCTURE](DATA_STRUCTURE.md)
+Contains information about the structure of all files in from [Kaggle - Data Science for Good](https://www.kaggle.com/datasets/center-for-policing-equity/data-science-for-good) and a brief analysis.
+
+### [POLICING_REPORT_ANALYSIS](POLICING_REPORT_ANALYSIS.md)
+Contains a detailed description of the steps conducted and the respective results.
+The information here are to support the description in the paper.
+
+### [Univariate Statistics](stats)
+This directory contains several plots and detailed statistical information about the features after pre-processing.
+
+### [Clustering Results](clustering/cluster_stats)
+This directory contains the results of the clustering of groups. It comes along with different visualizations.
+
+### [final_values] (final_values.csv)
+This file contains the clusters of the groups. The dataframe is reduced to the cluster results of the groups and complete clusters.
+
+### [first_clustering] (first_clustering.csv)
+This file contains the features and the cluster results of the group clustering.
 
 ## Main
 The main.py file can be used to decide which analysis to run.
@@ -40,3 +60,4 @@ Run: dept_11_analysis_main.py
 Objective: Perform an analysis of the data provided by the Boston Police Department.
 
 Result: See the paper for detailed results.
+

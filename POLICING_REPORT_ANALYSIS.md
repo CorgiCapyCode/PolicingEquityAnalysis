@@ -323,6 +323,10 @@ Related feature: - \
 Reason: Inconsistent data as for VEH_MODEL. \
 
 
+**('SEARCH_REASON', 'BASIS') & ('SEARCH_CONDUCTED', 'SEARCH')**
+Realted feature: - \
+Reason: Both features have low filling grade. SEARCH only has 20,344 non-NA values (13,58%) and BASIS 34,976 (23,35%)
+
 After dropping these features, 23 features remain in the dataset:
 
 | Feature                                     | Count |
@@ -334,8 +338,6 @@ After dropping these features, 23 features remain in the dataset:
 | ('SUBJECT_RACE', 'DESCRIPTION')             | 7     |
 | ('SUBJECT_DETAILS.2', 'COMPLEXION')         | 9     |
 | ('UNKNOWN_FIELD_TYPE', 'FIOFS_TYPE')        | 26    |
-| ('SEARCH_CONDUCTED', 'SEARCH')              | 3     |
-| ('SEARCH_REASON', 'BASIS')                  | 3     |
 | ('INCIDENT_REASON', 'STOP_REASONS')         | 6     |
 | ('INCIDENT_REASON.1', 'FIOFS_REASONS')      | 115   |
 | ('DISPOSITION', 'OUTCOME')                  | 7     |
@@ -350,7 +352,7 @@ After dropping these features, 23 features remain in the dataset:
 | ('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED')     | 71    |
 | ('LOCATION_STREET_NUMBER', 'STREET_ID')     | 3155  |
 | ('LOCATION_CITY', 'CITY')                   | 22    |
-| Sum of unique values*                       | 5506  |
+| Sum of unique values*                       | 5500  |
 
 *without unique identifier and numerical and ordinal features
 
@@ -358,7 +360,7 @@ After dropping these features, 23 features remain in the dataset:
 
 Currently only five features have no missing data.
 The mode imputation would change the distributions for some features.
-The data imputation uses four different methods:
+The data imputation uses three different methods:
 
 SPI - Simple Probabilistic Imputer:
 - Imputing based on the probability distribution of unique values of one feature.
@@ -373,11 +375,6 @@ MBI: Multivariate Bayesian Imputer:
 - Imputes values based on the probablity distribution of a value, while taking the value of another feature as condition.
 - Needs SPI afterwards.
 
-DI: Dependent Imputer:
-- Pre-imputer to ensure data correctness.
-- It is used for (SEARCH_CONDUCTED, SEARCH), where the values V or VP cannot occur when there is no vehicle involved.
-- Needs SPI afterwards.
-
 Belows table shows which method is applied to which feature.
 
 | Feature                                 | Non-Null Count | Dtype            | Imputing method | Description                                   |
@@ -389,8 +386,6 @@ Belows table shows which method is applied to which feature.
 | (SUBJECT_RACE, DESCRIPTION)             | 143852         | object           | MBI -> SPI      | COMPLEXION                                    |
 | (SUBJECT_DETAILS.2, COMPLEXION)         | 127299         | object           | MBI -> SPI      | DESCRIPTION                                   |
 | (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)        | 149809         | object           | No missing data |                                               |
-| (SEARCH_CONDUCTED, SEARCH)              | 20344          | object           | DI, SPI         |                                               |
-| (SEARCH_REASON, BASIS)                  | 34976          | object           | SPI             |                                               |
 | (INCIDENT_REASON, STOP_REASONS)         | 103566         | object           | SPI             |                                               |
 | (INCIDENT_REASON.1, FIOFS_REASONS)      | 149809         | object           | No missing data |                                               |
 | (DISPOSITION, OUTCOME)                  | 141042         | object           | SPI             |                                               |
@@ -422,8 +417,6 @@ The following table shows the actions taken to reduce the complexity:
 | ('SUBJECT_RACE', 'DESCRIPTION')           | 7                       | n/a                 |
 | ('SUBJECT_DETAILS.2', 'COMPLEXION')       | 9                       | <25 to OTHER        |
 | ('UNKNOWN_FIELD_TYPE', 'FIOFS_TYPE')      | 26                      | Create Features     |
-| ('SEARCH_CONDUCTED', 'SEARCH')            | 3                       | Create Features     |
-| ('SEARCH_REASON', 'BASIS')                | 3                       | n/a                 |
 | ('INCIDENT_REASON', 'STOP_REASONS')       | 6                       | <25 to OTHER        |
 | ('INCIDENT_REASON.1', 'FIOFS_REASONS')    | 115                     | <25 to OTHER        |
 | ('DISPOSITION', 'OUTCOME')                | 7                       | Create Features     |
@@ -448,257 +441,610 @@ Create Features: The unique values are a mixture of abbirivations in different c
 
 Split date and time: Splits ('INCIDENT_DATE', 'FIO_DATE') to year, month, day.
 
-## Base Statistics
-
-- Univariate
-    - Analysis of the frequency of each value.
-    - Creation of pie chart and histogram (simplified for visualization)
-- Multivariate (time intensive process, creates >10000 plots)
-    - Grouping of two features
-    - Creation of scatter plots
-    - Creation of bar charts
+## 3.1 Base Statistics
 
+The following descriptions are based on the univariate distributions. They alone do not allow final conclusions regarding claims, such as racism etc. They have to be evaluated in the context of residental information, like provided in the ACS data. \
+Further: The colors in the diagrams have no meaning. They are automatically assigned using matplotlib.
 
-## Clustering
+Minor value: All values making either less then 1% of all values or not belonging to the group of the 25 top values.
 
-Clustering all data from the state above lead to very low cluster quality.
-Based on a sample of 50% of the data, the Sillhouette Score for all three applied algorithms (KMeans, DBSCAN and GMM) is maximum 0.06.
+All charts can be found in the [stats directory](stats)
 
-Two approaches to receive better cluster quality are conducted:
-1. Clustering in Groups
-The data can be grouped as seen below:
+- Group A: Subject
+    - ('SUBJECT_GENDER', 'SEX')
+        - Disitrubtion: 88.3% Male, 11.7% Female
+        - Comment: The subjects are mainly male.
 
-- Categorical Grouping
-    - Subject status
-        - (SUBJECT_GENDER, SEX)
-        - (SUBJECT_RACE, DESCRIPTION)
-        - (SUBJECT_DETAILS.2, COMPLEXION)
-        - (SUBJECT_DETAILS, PRIORS)
-        - (OFFICER_AGE, AGE_AT_FIO_CORRECTED)
-    - Vehicle
-        - (VEHICLE_MAKE, VEH_MAKE)
-        - (VEHICLE_YEAR, VEH_YEAR_NUM)
-        - (VEHICLE_COLOR, VEH_COLOR)
-        - (VEHICLE_DETAILS, VEH_OCCUPANT)
-        - (VEHICLE_DETAILS.1, VEH_STATE)
-    - Location
-        - (LOCATION_STREET_NUMBER, STREET_ID)
-        - (LOCATION_CITY, CITY)
-        - (OFFICER_ASSIGNMENT, OFF_DIST_ID)
-    - Officer / Supervisor
-        - (OFFICER_SUPERVISOR, SUPERVISOR_ID)
-        - (OFFICER_ID, OFFICER_ID)
-    - Action
-        - (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)
-        - (SEARCH_CONDUCTED, SEARCH)
-        - (SEARCH_REASON, BASIS)
-        - (INCIDENT_REASON, STOP_REASONS)
-        - (INCIDENT_REASON.1, FIOFS_REASONS)
-        - ('DISPOSITION', 'OUTCOME')
-    - Date
-        - ('Year', 'Year')
-        - ('Month', 'Month')
+<img src="stats/univariate_pie_charts/pie_chart_('SUBJECT_GENDER','SEX').jpg" alt="Chart" width="300px">
 
-The clustering will be performed on each group.
-The nuclei of each group will then be used as input for the clustering over all data, instead of using the whole dataframe.
+    - ('SUBJECT_RACE', 'DESCRIPTION')
+        - Distribution: 61.1% Black, 23.7% White, 13.5% Hispanic
+        - Comment: Around two thirds of the subjects are black, which indicates that the claim that special communities where more often under investigation, than others. \
+        However, that does not mean that officers are automatically racist. This value maybe explained by the resident distribution. \
+        If, for example, around 2/3 of the residents in Boston are black, then this outcome would be expected.
 
-2. Reducing the dimensionality further:
-Currently around 2,000 one hot encoded features are considered for clustering. This influences the performance of the clustering.
-A step to increase performance would be to drop more features, although this comes along with the loss of information.
+<img src="stats/univariate_pie_charts/pie_chart_('SUBJECT_RACE', 'DESCRIPTION').jpg" alt="Chart" width="300px">
 
-Both steps will be performed and the results will be compared.
+    - ("SUBJECT_DETAILS.2", "COMPLEXION")
+        - Distribution: 46.2% Med (Medium), 26.4% Light, 20.9% Dark
+        - Comment: The data shows that around 2/3 of subjects are of medium or dark complexion. This aligns with the percentage of black (and hispanic) subjects of the description feature. The number of white and light also align.
 
+    - ("SUBJECT_DETAILS", "PRIORS")
+        - Distribution: 86.3% Yes, 12.5% No, 1.3% Unknown
+        - Comment: The numbers show that the subjects mainly have prior records.
 
-To step 2: \
-The features STREET_ID and OFFICER_ID will be dropped. After grouping insignificant values (below 25 occurances), the group of "OTHER" is the strongest one. \
-Meaning, that the data is very diverse. Dropping both will remove 1560 unique values.
+    - ("OFFICER_AGE", "AGE_AT_FIO_CORRECTED")
+        - Distribution: around 1/3 between 19 and 24
+        - Comment: The histogram shows that around 1/3 of the subjects are of age 19 to 24. Afterwards the numbers decline, until they stabilze at around 1%, before they drop again. \
+        The values grouped to minor have the largest share. This means that the ages not shown in the diagram are quite stable and do not decline rapidly to zero.
 
+<img src="stats/univariate_histograms/histogram_('OFFICER_AGE', 'AGE_AT_FIO_CORRECTED').jpg" alt="Chart" width="300px">
 
+- Group B: Vehicle
+    - The data is heavily influenced under the "NO VEHICLE INVOLVED" entry, which makes around 2/3 of all entries.
+    - (VEHICLE_MAKE, VEH_MAKE)
+        - Distribution: 5.1% Honda
+        - Comment: Honda is the most occuring brand in this dataset.
 
-Results from Step 1:
-Using 5% of the data for sample with max. 10 clusters.
-------------------------
-Subject Cluster Information
-
-{'subject_elbow_value': 4, 'subject_optimal_n': 8, 'subject_sil_score_kmeans': 0.48729538974930203, 'subject_sil_score_gmm': 0.6145651663968986}
-------------------------
-Vehicle Cluster Information
-
-{'vehicle_elbow_value': 3, 'vehicle_optimal_n': 9, 'vehicle_sil_score_kmeans': 0.7517884506907374, 'vehicle_sil_score_gmm': 0.748684134205044}
-Location Cluster Information
-
-{'location_elbow_value': 3, 'location_optimal_n': 9, 'location_sil_score_kmeans': 0.20466252719057035, 'location_sil_score_gmm': 0.33274208556758444}
-------------------------
-Officer Cluster Information
-
-{'officer_elbow_value': 2, 'officer_optimal_n': 5, 'officer_sil_score_kmeans': 0.008432626813366166, 'officer_sil_score_gmm': 0.05825974220469778}
-------------------------
-Action Cluster Information
-
-{'action_elbow_value': 6, 'action_optimal_n': 8, 'action_sil_score_kmeans': 0.23485082430181106, 'action_sil_score_gmm': 0.2108178922062599}
-------------------------
-Date Cluster Information
-
-{'date_elbow_value': 4, 'date_optimal_n': 9, 'date_sil_score_kmeans': 0.4082791003644961, 'date_sil_score_gmm': 0.3477342613389168}
-
-
-Results from Step 2:
-Low values, like for total features.
-
-
-From here only step 1 will be investigated further:
-
-Optimization Loop 1: Increase the max. clusters to 20, by keeping sample of 5% (around 7500 values).
-
-{'subject_elbow_value': 9, 'subject_optimal_n': 18, 'subject_sil_score_kmeans': 0.6743149325107848, 'subject_sil_score_gmm': 0.811916357395974}
-------------------------
-Vehicle Cluster Information
-
-{'vehicle_elbow_value': 6, 'vehicle_optimal_n': 14, 'vehicle_sil_score_kmeans': 0.7351589122929069, 'vehicle_sil_score_gmm': 0.7416582888646603}
-Location Cluster Information
-
-{'location_elbow_value': 3, 'location_optimal_n': 19, 'location_sil_score_kmeans': 0.20466252719057035, 'location_sil_score_gmm': 0.5166037540752957}
-------------------------
-Officer Cluster Information
-
-{'officer_elbow_value': 10, 'officer_optimal_n': 5, 'officer_sil_score_kmeans': 0.12970817300877532, 'officer_sil_score_gmm': 0.05825974220469778}
-------------------------
-Action Cluster Information
-
-{'action_elbow_value': 7, 'action_optimal_n': 16, 'action_sil_score_kmeans': 0.24821050900097913, 'action_sil_score_gmm': 0.28370955053737057}
-------------------------
-Date Cluster Information
-
-{'date_elbow_value': 5, 'date_optimal_n': 15, 'date_sil_score_kmeans': 0.37448710635340354, 'date_sil_score_gmm': 0.216285715023049}
-
-
-
-Optimization Loop 2: Increase the data sample from 5% to 20%:
-
-{'subject_elbow_value': 8, 'subject_optimal_n': 19, 'subject_sil_score_kmeans': 0.6639927546608346, 'subject_sil_score_gmm': 0.8137854580126171}
-------------------------
-Vehicle Cluster Information
-
-{'vehicle_elbow_value': 6, 'vehicle_optimal_n': 19, 'vehicle_sil_score_kmeans': 0.731215686357624, 'vehicle_sil_score_gmm': 0.7514298104595686}
-Location Cluster Information
-
-{'location_elbow_value': 6, 'location_optimal_n': 19, 'location_sil_score_kmeans': 0.30145259702103966, 'location_sil_score_gmm': 0.5215717360757914}
-------------------------
-Officer Cluster Information
-
-{'officer_elbow_value': 3, 'officer_optimal_n': 3, 'officer_sil_score_kmeans': 0.028046401341184645, 'officer_sil_score_gmm': 0.028046401341184645}
-------------------------
-Action Cluster Information
-
-{'action_elbow_value': 8, 'action_optimal_n': 17, 'action_sil_score_kmeans': 0.2708746266775471, 'action_sil_score_gmm': 0.27139773594531186}
-------------------------
-Date Cluster Information
-
-{'date_elbow_value': 5, 'date_optimal_n': 18, 'date_sil_score_kmeans': 0.3824516626486248, 'date_sil_score_gmm': -0.08214558947469201}
-
-
-
-Optimization Loop 3: Increase the max. clusters to 50, since some clusters are close to max. (Subject & Location), but with only 10% data sample (reduce computational effort)
-
-Subject Cluster Information
-
-{'subject_elbow_value': 13, 'subject_optimal_n': 34, 'subject_sil_score_kmeans': 0.7696420172601222, 'subject_sil_score_gmm': 0.744976491116243}
-------------------------
-Vehicle Cluster Information
-
-{'vehicle_elbow_value': 12, 'vehicle_optimal_n': 23, 'vehicle_sil_score_kmeans': 0.7635204586408093, 'vehicle_sil_score_gmm': 0.758258727240427}
-Location Cluster Information
-
-{'location_elbow_value': 19, 'location_optimal_n': 49, 'location_sil_score_kmeans': 0.5520436598920627, 'location_sil_score_gmm': 0.7929411900995825}
-------------------------
-Officer Cluster Information
-
-{'officer_elbow_value': 24, 'officer_optimal_n': 2, 'officer_sil_score_kmeans': 0.22899771536631552, 'officer_sil_score_gmm': 0.013115555119923147}
-------------------------
-Action Cluster Information
-
-{'action_elbow_value': 16, 'action_optimal_n': 41, 'action_sil_score_kmeans': 0.36579921264478527, 'action_sil_score_gmm': 0.46526916793197426}
-------------------------
-Date Cluster Information
-
-{'date_elbow_value': 9, 'date_optimal_n': 49, 'date_sil_score_kmeans': 0.36138593211908027, 'date_sil_score_gmm': -0.11678268182600121}
-
-
-1% data sample with 80 max.
-
-Subject Cluster Information
-
-{'subject_elbow_value': 14, 'subject_optimal_n': 19, 'subject_sil_score_kmeans': 0.777874534636768, 'subject_sil_score_gmm': 0.8160316101141776}
-------------------------
-Vehicle Cluster Information
-
-{'vehicle_elbow_value': 7, 'vehicle_optimal_n': 6, 'vehicle_sil_score_kmeans': 0.7354643509211813, 'vehicle_sil_score_gmm': 0.7324069324333307}
-Location Cluster Information
-
-{'location_elbow_value': 20, 'location_optimal_n': 20, 'location_sil_score_kmeans': 0.5832644669794311, 'location_sil_score_gmm': 0.5714279392377651}
-------------------------
-Officer Cluster Information
-
-{'officer_elbow_value': 3, 'officer_optimal_n': 2, 'officer_sil_score_kmeans': 0.032043640605048815, 'officer_sil_score_gmm': 0.011669448527196424}
-------------------------
-Action Cluster Information
-
-{'action_elbow_value': 19, 'action_optimal_n': 14, 'action_sil_score_kmeans': 0.3930204007081232, 'action_sil_score_gmm': 0.27019095757474265}
-------------------------
-Date Cluster Information
-
-{'date_elbow_value': 11, 'date_optimal_n': 30, 'date_sil_score_kmeans': 0.37161081745644203, 'date_sil_score_gmm': -0.1897256401656206}
-
-
-Last itertation: 10%, 80
-{'subject_elbow_value': 15, 'subject_optimal_n': 34, 'subject_sil_score_kmeans': 0.7901484052294335, 'subject_sil_score_gmm': 0.744976491116243}
-------------------------
-Vehicle Cluster Information
-
-{'vehicle_elbow_value': 12, 'vehicle_optimal_n': 23, 'vehicle_sil_score_kmeans': 0.7635204586408093, 'vehicle_sil_score_gmm': 0.758258727240427}
-Location Cluster Information
-
-{'location_elbow_value': 19, 'location_optimal_n': 68, 'location_sil_score_kmeans': 0.5520436598920627, 'location_sil_score_gmm': 0.8810924946982733}
-------------------------
-Officer Cluster Information
-
-{'officer_elbow_value': 24, 'officer_optimal_n': 2, 'officer_sil_score_kmeans': 0.22899771536631552, 'officer_sil_score_gmm': 0.013115555119923147}
-------------------------
-Action Cluster Information
-
-{'action_elbow_value': 16, 'action_optimal_n': 41, 'action_sil_score_kmeans': 0.36579921264478527, 'action_sil_score_gmm': 0.46526916793197426}
-------------------------
-Date Cluster Information
-
-{'date_elbow_value': 11, 'date_optimal_n': 58, 'date_sil_score_kmeans': 0.347562274067459, 'date_sil_score_gmm': 0.07550005391704444}
-
-
-
-
-25% of data, max. 80 cluster
-
-{'subject_elbow_value': 14, 'subject_optimal_n': 53, 'subject_sil_score_kmeans': 0.776417459023424, 'subject_sil_score_gmm': 0.7096916190121251}
-------------------------
-Vehicle Cluster Information
-
-{'vehicle_elbow_value': 21, 'vehicle_optimal_n': 58, 'vehicle_sil_score_kmeans': 0.7567258544510215, 'vehicle_sil_score_gmm': 0.7669797685016199}
-Location Cluster Information
-
-{'location_elbow_value': 20, 'location_optimal_n': 79, 'location_sil_score_kmeans': 0.5678903549720249, 'location_sil_score_gmm': 0.9113400965917399}
-------------------------
-Officer Cluster Information
-
-{'officer_elbow_value': 7, 'officer_optimal_n': 12, 'officer_sil_score_kmeans': 0.09963809701366284, 'officer_sil_score_gmm': 0.13190812764785292}
-------------------------
-Action Cluster Information
-
-{'action_elbow_value': 25, 'action_optimal_n': 49, 'action_sil_score_kmeans': 0.417409035931026, 'action_sil_score_gmm': 0.5065469017321592}
-------------------------
-Date Cluster Information
-
-{'date_elbow_value': 12, 'date_optimal_n': 66, 'date_sil_score_kmeans': 0.34988874525792507, 'date_sil_score_gmm': 0.1552410652458594}
-
-Open doings:
-Find mode value for each cluster and overwrite the actual column value -> create new df.
-Delete double entries? - To be discussed -> instead of deleting: get unique columns list -> add a feature that counts it?
-Run the clustering on the reduced dataframe
+    - (VEHICLE_YEAR, VEH_YEAR_NUM)
+        - Distribution: The main vehicle age lies inbetween 1999 and 2003 (all over 2%).
+        - Comment: The distribution shows a similar behaviour like the subjects age.
+
+<img src="stats/univariate_histograms/histogram_('VEHICLE_YEAR', 'VEH_YEAR_NUM').jpg" alt="Chart" width="300px">
+
+    - (VEHICLE_COLOR, VEH_COLOR)
+        - Distribution: 7.7% grey, 6.7% black
+        - Comment: Considering that no vehicle was involved in 2/3 of records, the two colors black and grey make around 46% of all cases where a vehicle was invovled.
+
+    - (VEHICLE_DETAILS, VEH_OCCUPANT)
+        - Distribution: 17.7% Driver, 13.3% Passenger
+        - Comment: The number of passenger investigations indicate that in many cases a passenger was present.
+
+    - (VEHICLE_DETAILS.1, VEH_STATE)
+        - Distribution: 28.6% MA
+        - Comment: Almost all involved vehicles are from Massachusetts. This indicates that the records are connected with residents.
+
+- Group C: Location
+    - ("LOCATION_STREET_NUMBER", "STREET_ID")
+        - Distribution: 5.8% 4771, 4.9% 485, 54.3% Minors, 9.2% OTHER
+        - Comment: More than 10% of the cases happened in two streets, ID 4771 and 485. The ID 4771 describes the Washington Street, while 485 is the Blue Hill Avenue. \
+        There are more than one Washington streets in Boston. Based on the raw data and intersections having the ID 4771, it is the Washington Street in the centre, leading south west. \
+        The Blue Hill Avenue is one of the main streets leading to the centre from south. Both streets frame the Roxbury district.
+
+    - ("LOCATION_CITY", "CITY")
+        - Distribution: 29.4% Dorchester, 16.9% Boston, 11.9% Roxbury
+        - Comment: It can be assumed that Boston means the city centre, since the other names are district names of Boston. \
+        The Roxbury district is connected with the results of the feature ("LOCATION_STREET_NUMBER", "STREET_ID"). The Dorchester district is located south east of Roxbury.
+
+- Groupd D: Officer
+    - (OFFICER_SUPERVISOR, SUPERVISOR_ID)
+        - Distribution: 10.6% ID 11610, 9.8% ID 11756
+        - Comment: More than 20% of all cases are connected with only two supervisor IDs. This indicates that these supervisors are connected with the Roxbury and Dorchester district. \
+        However, there is yet no prove for this.
+
+    - (OFFICER_ID, OFFICER_ID)
+        - Distribution: 2.0% ID 107106
+        - Comment: The distribution of officer IDs is quite flat, although there are some IDs having a larger share.
+
+    - (OFFICER_ASSIGNMENT, OFF_DIST_ID)   
+        - Distribution: 29.8% Dist 16,, 15.1% Dist 3, 10.9% Dist 1, 9.5% Dist 4
+        - Comment: The Dist ID 16 is related with YVSF from the raw data's feature OFF_DIST. A deeper analysis of the meaning behind this is not done for this paper. However, the [BPD](https://police.boston.gov/) provides more information.
+
+<img src="stats/univariate_pie_charts/pie_chart_('OFFICER_ASSIGNMENT', 'OFF_DIST_ID').jpg" alt="Chart" width="300px">
+
+
+- Group E: Action
+    - (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)
+        - Distribution: 70.7% I (Interrogated), 86.0% O (Observed)
+        - Comment: Mainly interrogation and observation was done by the officers. While the other types play a less important role.
+
+    - (INCIDENT_REASON, STOP_REASONS)
+        - Distribution: Investigate (57.8%)
+        - Commment: More than a half of records are related to an investigation.
+
+    - (INCIDENT_REASON.1, FIOFS_REASONS)
+        - Distribution: 64.9% Investigate
+        - Comment: The results here align with the feature (INCIDENT_REASON, STOP_REASONS).
+
+    - ('DISPOSITION', 'OUTCOME')
+        - Distribution: 97.6% F
+        - Comment: The main outcome of the record is FIO.
+
+- Group F: Date
+    - ('Year', 'Year')
+        - Distribution: 6.3% 2015
+        - Comment: The year 2015 appears only around 6.3% of all records, while the remaining years appear between 22.0% and 25.7%. As in the histogram shown, the years 2011 to 2014 show a slight decrease in cases, which indicates that there are less crimes conducted.
+
+<img src="stats/univariate_histograms/histogram_('Year', 'Year').jpg" alt="Chart" width="300px">
+
+    - ('Month', 'Month')
+        - Distribution: max. 5, min. 12
+        - Comment: The month show a slight increase in records between March and May, while a strong decrease during November and December.
+
+<img src="stats/univariate_histograms/histogram_('Month', 'Month').jpg" alt="Chart" width="300px">
+    
+    - ('Day', 'Day')
+        - Distribution: drop at 31
+        - Comment: The drop of occurences at the day 31 can be explained that many month do not have this date. Considering this, it can be said that the records are equally distributed over all days in the month.
+
+
+## 3.2 Modelling
+
+Based on the category of each feature and the results of 2.5 and 3.1 the features where grouped into 6 groups.
+
+- Subject status
+    - (SUBJECT_GENDER, SEX)
+    - (SUBJECT_RACE, DESCRIPTION)
+    - (SUBJECT_DETAILS.2, COMPLEXION)
+    - (SUBJECT_DETAILS, PRIORS)
+    - (OFFICER_AGE, AGE_AT_FIO_CORRECTED)
+- Vehicle
+    - (VEHICLE_MAKE, VEH_MAKE)
+    - (VEHICLE_YEAR, VEH_YEAR_NUM)
+    - (VEHICLE_COLOR, VEH_COLOR)
+    - (VEHICLE_DETAILS, VEH_OCCUPANT)
+    - (VEHICLE_DETAILS.1, VEH_STATE)
+- Location
+    - (LOCATION_STREET_NUMBER, STREET_ID)
+    - (LOCATION_CITY, CITY)
+- Officer / Supervisor
+    - (OFFICER_SUPERVISOR, SUPERVISOR_ID)
+    - (OFFICER_ID, OFFICER_ID)
+    - (OFFICER_ASSIGNMENT, OFF_DIST_ID)        
+- Action
+    - (UNKNOWN_FIELD_TYPE, FIOFS_TYPE)
+    - (INCIDENT_REASON, STOP_REASONS)
+    - (INCIDENT_REASON.1, FIOFS_REASONS)
+    - ('DISPOSITION', 'OUTCOME')
+- Date
+    - ('Year', 'Year')
+    - ('Month', 'Month')
+    - ('Day', 'Day')
+
+The clustering algorithm is applied to each of these groups independently.
+
+| Group    | k cluster for K-Means | Silhouette Score (K-Means) | n cluster for GMM | Silhouette Score (GMM) |
+|----------|-----------------------|----------------------------|-------------------|------------------------|
+| Subject  | 17                    | 0.8017                     | 79                | 0.6298                 |
+| Vehicle  | 20                    | 0.7569                     | 99                | 0.8025                 |
+| Location | 15                    | 0.995                      | 22                | 1.0                    |
+| Officer  | 8                     | 0.2649                     | 16                | 0.1337                 |
+| Action   | 21                    | 0.5916                     | 93                | 0.7689                 |
+| Date     | 15                    | 0.3619                     | 72                | 0.2612                 |
+
+### Subject Cluster Analysis
+
+Total number of clusters: 17
+
+Top 3 Clusters:
+- No. 1 - 29.37%
+- No. 0 - 17,6%
+- No. 2 - 12.23%
+
+Distribution: 
+
+<img src="clustering/cluster_stats/univariate_pie_charts/pie_chart_('subject_cluster', 'subject_cluster').jpg" alt="Chart" width="300px">
+
+Cluster Insights:
+
+| Count | Percentage | subject_cluster | SUBJECT_GENDER_SEX | SUBJECT_RACE_DESCRIPTION | SUBJECT_DETAILS.2_COMPLEXION | SUBJECT_DETAILS_PRIORS | OFFICER_AGE_AGE_AT_FIO_CORRECTED |
+|-------|------------|-----------------|--------------------|--------------------------|------------------------------|------------------------|-----------------------------------|
+| 43992 | 0.293653   | 1               | 1                  | Black                    | Med                          | YES                    | 0.171429                         |
+| 26376 | 0.176064   | 0               | 1                  | Black                    | Dark                         | YES                    | 0.171429                         |
+| 18328 | 0.122342   | 2               | 1                  | White                    | Light                        | YES                    | 0.257143                         |
+| 8833  | 0.058962   | 3               | 1                  | Hispanic                 | Med                          | YES                    | 0.142857                         |
+| 8182  | 0.054616   | 5               | 1                  | Hispanic                 | Light                        | YES                    | 0.171429                         |
+| 7843  | 0.052353   | 6               | 1                  | Black                    | Light                        | YES                    | 0.171429                         |
+| 7551  | 0.050404   | 4               | 1                  | White                    | Med                          | YES                    | 0.271429                         |
+| 4964  | 0.033136   | 7               | 1                  | Black                    | Med                          | NO                     | 0.128571                         |
+| 3667  | 0.024478   | 10              | 1                  | White                    | Light                        | NO                     | 0.128571                         |
+| 3627  | 0.024211   | 9               | 1                  | Black                    | Dark                         | NO                     | 0.128571                         |
+| 2949  | 0.019685   | 8               | 1                  | Black                    | Brown                        | YES                    | 0.171429                         |
+| 2908  | 0.019411   | 11              | 1                  | White                    | Fair                         | YES                    | 0.257143                         |
+| 2655  | 0.017723   | 12              | 1                  | Hispanic                 | Light                        | NO                     | 0.114286                         |
+| 2406  | 0.016060   | 16              | 1                  | White                    | OTHER                        | YES                    | 0.214286                         |
+| 2208  | 0.014739   | 14              | 1                  | Hispanic                 | Med                          | NO                     | 0.128571                         |
+| 1894  | 0.012643   | 15              | 1                  | White                    | Med                          | NO                     | 0.171429                         |
+| 1426  | 0.009519   | 13              | 1                  | Black                    | Med                          | UNKNOWN                | 0.142857                         |
+
+Analysis:
+
+All clusters contain only male in their nucleus. Furhter only the races black, hispanic and white are values of the different nuclei.
+From the ten possible different values, the complexion is reduced to five. The age ranges from 0.114 to 0.271 indicating that the younger population is represented by the nuclei.
+
+Position of clusters:
+
+<img src="clustering/cluster_stats/visualization/subject_cluster_visu.jpg" alt="Chart" width="300px">
+
+Interpretation:
+
+The feature SEX was removed, since all clusters are dominated by the value "MALE". \
+The clusters are taken as labels (points) and their size is defined by the percentage value. \
+The features DESCRIPTION, COMPLEXION and AGE are used for the position in the coordinate system. Therefore DESCRIPTION and COMPLEXION have been label encoded and min-max scaled. \
+The feature PRIORS works as a scalar of the point vector. For "YES" it multiplies 1 with the vector, while else it multiplies with -1. This makes the interpretation a bit more difficult, since the distance of the points cannot be taken as measure for the difference between the clusters. However, this method gives a good overview over the relation of the clusters.
+
+### Vehicle Cluster Analysis
+
+Total number of clusters: 99 (this was the limit set for GMM)
+
+Top 3 Cluster:
+- No. 0 - 68.94%
+- No. 5 - 1.21%
+- No. 2 - 1.19%
+
+Distribution: 
+
+<img src="clustering/cluster_stats/univariate_pie_charts/pie_chart_('vehicle_cluster', 'vehicle_cluster').jpg" alt="Chart" width="300px">
+
+Cluster Insights:
+| Count  | Percentage  | vehicle_cluster_vehicle_cluster  | VEHICLE_MAKE_VEH_MAKE  | VEHICLE_YEAR_VEH_YEAR_NUM | VEHICLE_COLOR_VEH_COLOR  | VEHICLE_DETAILS_VEH_OCCUPANT | VEHICLE_DETAILS.1_VEH_STATE |
+|--------|-------------|----------------------------------|------------------------|---------------------------|--------------------------|------------------------------|-----------------------------|
+| 103278 | 0.689397833 | 0                                | NO VEHICLE INVOLVED    | NO VEHICLE INVOLVED       | NO VEHICLE INVOLVED      | NO VEHICLE INVOLVED          | NO VEHICLE INVOLVED         |
+| 1819   | 0.012142128 | 5                                | FORD                   | 2000                      | WHITE                    | PASSENGER                    | MA                          |
+| 1778   | 0.011868446 | 2                                | HONDA                  | 1999                      | BLACK                    | PASSENGER                    | MA                          |
+| 1643   | 0.010967298 | 7                                | HONDA                  | 1999                      | RED                      | DRIVER                       | MA                          |
+| 1375   | 0.009178354 | 13                               | HONDA                  | 1998                      | GREEN                    | PASSENGER                    | MA                          |
+| 1216   | 0.008117002 | 38                               | HONDA                  | 2000                      | BLACK                    | DRIVER                       | MA                          |
+| 1202   | 0.00802355  | 9                                | HONDA                  | 2000                      | RED                      | PASSENGER                    | MA                          |
+| 1162   | 0.007756543 | 21                               | HONDA                  | 2000                      | BROWN                    | PASSENGER                    | MA                          |
+| 1103   | 0.007362709 | 15                               | HONDA                  | 2003                      | BROWN                    | DRIVER                       | MA                          |
+| 1015   | 0.006775294 | 8                                | HONDA                  | 2014                      | BLACK                    | DRIVER                       | MA                          |
+| 974    | 0.006501612 | 26                               | HONDA                  | 2002                      | BLACK                    | DRIVER                       | MA                          |
+| 950    | 0.006341408 | 4                                | HONDA                  | 1995                      | GREEN                    | DRIVER                       | MA                          |
+| 925    | 0.006174529 | 50                               | HONDA                  | 2011                      | GREY                     | PASSENGER                    | MA                          |
+| 874    | 0.005834095 | 35                               | HONDA                  | 1999                      | GREY                     | DRIVER                       | MA                          |
+| 843    | 0.005627165 | 45                               | HONDA                  | 2003                      | BLUE                     | DRIVER                       | MA                          |
+| 751    | 0.00501305  | 77                               | HONDA                  | 1998                      | GREY                     | DRIVER                       | MA                          |
+| 746    | 0.004979674 | 82                               | HONDA                  | 2003                      | WHITE                    | DRIVER                       | MA                          |
+| 722    | 0.00481947  | 93                               | HONDA                  | 2003                      | BLUE                     | PASSENGER                    | MA                          |
+| 703    | 0.004692642 | 11                               | HONDA                  | 2006                      | BLUE                     | PASSENGER                    | MA                          |
+| 680    | 0.004539113 | 14                               | HONDA                  | 2004                      | GREY                     | DRIVER                       | MA                          |
+| 661    | 0.004412285 | 18                               | FORD                   | 2001                      | BLACK                    | DRIVER                       | MA                          |
+| 614    | 0.004098552 | 22                               | HONDA                  | 2003                      | GREY                     | DRIVER                       | MA                          |
+| 605    | 0.004038476 | 24                               | TOYOTA                 | 2012                      | GREY                     | DRIVER                       | MA                          |
+| 594    | 0.003965049 | 54                               | TOYOTA                 | 2007                      | GREY                     | DRIVER                       | MA                          |
+| 583    | 0.003891622 | 63                               | FORD                   | 2013                      | BLACK                    | DRIVER                       | MA                          |
+| 575    | 0.003838221 | 83                               | HONDA                  | 2004                      | BLACK                    | DRIVER                       | MA                          |
+| 561    | 0.003744768 | 25                               | HONDA                  | 1998                      | BLACK                    | DRIVER                       | MA                          |
+| 552    | 0.003684692 | 12                               | HONDA                  | 2006                      | BLACK                    | DRIVER                       | MA                          |
+| 538    | 0.00359124  | 80                               | HONDA                  | 1997                      | BLACK                    | DRIVER                       | MA                          |
+| 537    | 0.003584564 | 23                               | HONDA                  | 2000                      | SILVER                   | PASSENGER                    | MA                          |
+| 504    | 0.003364284 | 34                               | NISSAN                 | 2002                      | GREY                     | DRIVER                       | MA                          |
+| 502    | 0.003350934 | 91                               | HONDA                  | 2009                      | GREY                     | DRIVER                       | MA                          |
+| 496    | 0.003310883 | 28                               | HONDA                  | 2004                      | GREY                     | PASSENGER                    | MA                          |
+| 488    | 0.003257481 | 31                               | TOYOTA                 | 2010                      | GREY                     | DRIVER                       | MA                          |
+| 480    | 0.00320408  | 30                               | NISSAN                 | 2002                      | BLACK                    | PASSENGER                    | MA                          |
+| 477    | 0.003184054 | 49                               | HONDA                  | 2001                      | GREY                     | DRIVER                       | MA                          |
+| 473    | 0.003157354 | 1                                | HONDA                  | 2000                      | GREY                     | DRIVER                       | MA                          |
+| 466    | 0.003110628 | 33                               | HONDA                  | 2005                      | BLACK                    | DRIVER                       | MA                          |
+| 455    | 0.003037201 | 43                               | HONDA                  | 2000                      | GREY                     | PASSENGER                    | MA                          |
+| 452    | 0.003017175 | 58                               | CHEVROLET              | 2011                      | BLACK                    | DRIVER                       | MA                          |
+| 442    | 0.002950424 | 64                               | HONDA                  | 1996                      | BLACK                    | DRIVER                       | MA                          |
+| 431    | 0.002876997 | 39                               | HONDA                  | 2003                      | BLACK                    | PASSENGER                    | MA                          |
+| 408    | 0.002723468 | 3                                | HONDA                  | 2003                      | GREY                     | PASSENGER                    | MA                          |
+| 405    | 0.002703442 | 51                               | HONDA                  | 2008                      | GREY                     | DRIVER                       | MA                          |
+| 403    | 0.002690092 | 42                               | HONDA                  | 2005                      | GREY                     | DRIVER                       | MA                          |
+| 400    | 0.002670067 | 90                               | HONDA                  | 1997                      | GREEN                    | DRIVER                       | MA                          |
+| 396    | 0.002643366 | 65                               | HONDA                  | 2001                      | GREY                     | PASSENGER                    | MA                          |
+| 393    | 0.00262334  | 95                               | DODGE                  | 2000                      | BLUE                     | DRIVER                       | MA                          |
+| 381    | 0.002543238 | 46                               | HONDA                  | 1999                      | RED                      | PASSENGER                    | MA                          |
+| 370    | 0.002469812 | 71                               | HONDA                  | 1999                      | GREY                     | PASSENGER                    | MA                          |
+| 370    | 0.002469812 | 60                               | NISSAN                 | 2002                      | GREY                     | PASSENGER                    | MA                          |
+| 370    | 0.002469812 | 48                               | HONDA                  | 1999                      | BLACK                    | DRIVER                       | MA                          |
+| 369    | 0.002463136 | 36                               | HONDA                  | 2006                      | GREY                     | DRIVER                       | MA                          |
+| 358    | 0.00238971  | 53                               | HONDA                  | 2000                      | BLACK                    | PASSENGER                    | MA                          |
+| 356    | 0.002376359 |
+
+Analysis:
+
+This cluster is heavly determined by the NO VEHICLE INVOLVED entry, which is the cluster no. 0. After this cluster the other denote at 1.2% and below, where the smallest cluster only contains 0.04% of all data points.
+The main mode value for the vehicle type is HONDA. The year of the vehicle ranges from 1995 to 2014. The color grey appears most often as mode value for the nuclei, while MA ia the only value occuring in the state feature.
+
+Position of clusters:
+
+<img src="clustering/cluster_stats/visualization/vehicle_cluster_visu.jpg" alt="Chart" width="300px">
+
+### Location Cluster Analysis
+
+Total number of clusters: 22
+
+Top 3 Cluster:
+- No. 1 - 29.38%
+- No. 2 - 16.94%
+- No. 0 - 15.54%
+
+Distribution: 
+
+<img src="clustering/cluster_stats/univariate_pie_charts/pie_chart_('location_cluster', 'location_cluster').jpg" alt="Chart" width="300px">
+
+Cluster Insights:
+
+| Count | Percentage   | location_cluster_location_cluster  | LOCATION_STREET_NUMBER_STREET_ID | LOCATION_CITY_CITY  |
+|-------|--------------|------------------------------------|----------------------------------|---------------------|
+| 44015 | 0.293807448  | 1                                  | OTHER                            | Dorchester          |
+| 25371 | 0.169355646  | 2                                  | 4771                             | Boston              |
+| 23285 | 0.155431249  | 0                                  | OTHER                            | OTHER               |
+| 17782 | 0.118697809  | 3                                  | 485                              | Roxbury             |
+| 8019  | 0.053528159  | 5                                  | OTHER                            | Mattapan            |
+| 6328  | 0.042240453  | 4                                  | OTHER                            | Hyde Park           |
+| 5245  | 0.035011248  | 6                                  | OTHER                            | South Boston        |
+| 4923  | 0.032861844  | 7                                  | OTHER                            | East Boston         |
+| 4078  | 0.027221328  | 8                                  | OTHER                            | Roslindale          |
+| 3637  | 0.024277580  | 10                                 | 822                              | Jamaica Plain       |
+| 2076  | 0.013857645  | 9                                  | OTHER                            | Charlestown         |
+| 1427  | 0.009525462  | 12                                 | 4771                             | South End           |
+| 1425  | 0.009512112  | 11                                 | OTHER                            | Brighton            |
+| 1249  | 0.008337283  | 13                                 | OTHER                            | West Roxbury        |
+| 573   | 0.003824870  | 14                                 | OTHER                            | Allston             |
+| 118   | 0.000787670  | 15                                 | OTHER                            | North End           |
+| 98    | 0.000654166  | 16                                 | OTHER                            | Mission Hill        |
+| 57    | 0.000380484  | 19                                 | 485                              | Back Bay            |
+| 40    | 0.000267007  | 17                                 | 4771                             | Downtown            |
+| 27    | 0.000180229  | 18                                 | 4762                             | Chinatown           |
+| 26    | 0.000173554  | 20                                 | 4771                             | Beacon Hill         |
+| 10    | 0.000066800  | 21                                 | 163                              | Fenway Kenmore      |
+
+Analysis: 
+
+The algorithm clustered the location according to the CITY feature. This epxlains the Silhouette score of 1 (perfect cluster). Since there are only two features in this group, this kind of behaviour is expected.
+
+Position of clusters:
+
+<img src="clustering/cluster_stats/visualization/location_cluster_visu.jpg" alt="Chart" width="300px">
+
+### Officer cluster Analysis
+
+Total number of clusters: 8
+
+Top 3 Cluster:
+- No. 1 - 29.77%
+- No. 7 - 17.11%
+- No. 0 - 15.13%
+
+Distribution: \
+
+<img src="clustering/cluster_stats/univariate_pie_charts/pie_chart_('officer_cluster', 'officer_cluster').jpg" alt="Chart" width="300px">
+
+Cluster Insights:
+
+| Count  | Percentage  | officer_cluster_officer_cluster  | OFFICER_SUPERVISOR_SUPERVISOR_ID | OFFICER_ID_OFFICER_ID | OFFICER_ASSIGNMENT_OFF_DIST_ID |
+|--------|-------------|----------------------------------|----------------------------------|-----------------------|--------------------------------|
+| 44601  | 0.297719096 | 1                                | 86124                            | 11631                 | 16                             |
+| 25637  | 0.17113124  | 7                                | 8662                             | OTHER                 | 6                              |
+| 22664  | 0.151285971 | 0                                | 11610                            | 107106                | 3                              |
+| 16309  | 0.108865288 | 3                                | 8949                             | 50576                 | 1                              |
+| 14276  | 0.095294675 | 2                                | 11756                            | 102353                | 4                              |
+| 12472  | 0.083252675 | 5                                | 10251                            | OTHER                 | 8                              |
+| 10714  | 0.071517733 | 6                                | 8695                             | OTHER                 | 5                              |
+| 3136   | 0.020933322 | 4                                | 10402                            | OTHER                 | 11                             |
+
+Analysis:
+
+The clusters are strongly influenced by the feature OFF_DIST_ID. The officer ID 11631 is only the fifth higest appearance in the dataset, but represents the nucleus of the cluster with the largest share. The same applies to the supervisor ID 86124, making only around 6.5% of all values, but being the mode value in the cluster. The supervisor ID occurs 9807 times in the dataset. 9136 times of that it occurs together with the value 16 of the OFF_DIST_ID and 205 times with the OFFICER_ID 1631, while with ID 107106 it occurs 283. Considering that the ID 107106 appears almost twice the times as 1631, the proportional share increased for 11631.
+
+Position of clusters:
+
+<img src="clustering/cluster_stats/visualization/officer_cluster_visu.jpg" alt="Chart" width="300px">
+
+### Action Cluster Analysis
+
+Total number of clusters: 93
+
+Top 3 Cluster:
+- No. 0 - 19.93%
+- No. 5 - 10.3%
+- No. 3 - 6.83%
+
+Distribution: \
+
+<img src="clustering/cluster_stats/univariate_pie_charts/pie_chart_('action_cluster', 'action_cluster').jpg" alt="Chart" width="300px">
+
+Cluster Insights:
+
+| Count | Percentage  | action_cluster | FIOFS_TYPE_F | FIOFS_TYPE_I | FIOFS_TYPE_P | FIOFS_TYPE_S | FIOFS_TYPE_O | STOP_REASONS             | FIOFS_REASONS    | OUTCOME_F | OUTCOME_O | OUTCOME_S |
+|-------|-------------|----------------|--------------|--------------|--------------|--------------|--------------|--------------------------|------------------|-----------|-----------|-----------|
+| 29863 | 0.199340494 | 0              | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | INVESTIGATE      | 1         | 0         | 0         |
+| 15427 | 0.102977792 | 5              | 0            | 0            | 0            | 0            | 1            | INVESTIGATIVE            | INVESTIGATE      | 1         | 0         | 0         |
+| 10225 | 0.068253576 | 3              | 0            | 1            | 0            | 0            | 1            | OTHER                    | INVESTIGATE      | 1         | 0         | 0         |
+| 8834  | 0.05896842  | 6              | 0            | 1            | 0            | 0            | 0            | INVESTIGATIVE            | INVESTIGATE      | 1         | 0         | 0         |
+| 6113  | 0.040805292 | 10             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | INVESTIGATE      | 1         | 0         | 0         |
+| 5419  | 0.036172727 | 11             | 0            | 0            | 0            | 0            | 1            | OTHER                    | INVESTIGATE      | 1         | 0         | 0         |
+| 4686  | 0.03127983  | 17             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | VAL              | 1         | 0         | 0         |
+| 4144  | 0.027661889 | 18             | 0            | 1            | 0            | 0            | 1            | MOTOR VEHICLE VIOLATION  | VAL              | 1         | 0         | 0         |
+| 3323  | 0.022181578 | 1              | 0            | 0            | 0            | 0            | 1            | RADIO CALL               | INVESTIGATE      | 1         | 0         | 0         |
+| 3294  | 0.021987998 | 7              | 0            | 1            | 0            | 0            | 1            | MOTOR VEHICLE VIOLATION  | INVESTIGATE      | 1         | 0         | 0         |
+| 2714  | 0.018116402 | 20             | 1            | 1            | 0            | 1            | 1            | INVESTIGATIVE            | INVESTIGATE      | 1         | 0         | 0         |
+| 2441  | 0.016294081 | 13             | 1            | 1            | 0            | 0            | 1            | RADIO CALL               | VAL              | 1         | 0         | 0         |
+| 2135  | 0.01425148  | 4              | 0            | 0            | 0            | 0            | 1            | INVESTIGATIVE            | VAL              | 1         | 0         | 0         |
+| 2126  | 0.014191404 | 21             | 0            | 1            | 0            | 0            | 1            | OTHER                    | VAL              | 1         | 0         | 0         |
+| 2094  | 0.013977798 | 2              | 0            | 0            | 0            | 0            | 1            | MOTOR VEHICLE VIOLATION  | VAL              | 1         | 0         | 0         |
+| 1880  | 0.012549313 | 46             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | DRUGS            | 1         | 0         | 0         |
+| 1832  | 0.012228905 | 24             | 0            | 0            | 0            | 0            | 1            | INVESTIGATIVE            | PROSTITUTION     | 1         | 0         | 0         |
+| 1800  | 0.012015299 | 14             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | TRESPASSING      | 1         | 0         | 0         |
+| 1623  | 0.010833795 | 70             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | AFFRAY           | 1         | 0         | 0         |
+| 1397  | 0.009325207 | 28             | 0            | 0            | 0            | 0            | 1            | MOTOR VEHICLE VIOLATION  | INVESTIGATE      | 1         | 0         | 0         |
+| 1377  | 0.009191704 | 56             | 1            | 1            | 0            | 1            | 1            | OTHER                    | INVESTIGATE      | 1         | 0         | 0         |
+| 1347  | 0.008991449 | 48             | 0            | 1            | 0            | 0            | 0            | RADIO CALL               | INVESTIGATE      | 1         | 0         | 0         |
+| 1275  | 0.008510837 | 54             | 0            | 1            | 0            | 0            | 0            | OTHER                    | INVESTIGATE      | 1         | 0         | 0         |
+| 1159  | 0.007736518 | 19             | 0            | 0            | 0            | 0            | 1            | INVESTIGATIVE            | TRESPASSING      | 1         | 0         | 0         |
+| 1147  | 0.007656416 | 51             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | 209A             | 1         | 0         | 0         |
+| 1141  | 0.007616365 | 67             | 1            | 1            | 0            | 0            | 1            | OTHER                    | WARRANTS         | 1         | 0         | 0         |
+| 1101  | 0.007349358 | 32             | 1            | 0            | 0            | 0            | 0            | INVESTIGATIVE            | INVESTIGATE      | 1         | 0         | 0         |
+| 1038  | 0.006928823 | 26             | 0            | 0            | 0            | 0            | 1            | INVESTIGATIVE            | DRUGS            | 1         | 0         | 0         |
+| 1023  | 0.006828695 | 25             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | PROSTITUTION     | 1         | 0         | 0         |
+| 1019  | 0.006801995 | 63             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | PANHANDLING      | 1         | 0         | 0         |
+| 932   | 0.006221255 | 31             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | PUBLIC DRINKING  | 1         | 0         | 0         |
+| 891   | 0.005947573 | 47             | 1            | 1            | 0            | 1            | 1            | RADIO CALL               | INVESTIGATE      | 1         | 0         | 0         |
+| 883   | 0.005894172 | 91             | 1            | 1            | 0            | 1            | 1            | INVESTIGATIVE            | WARRANTS         | 1         | 0         | 0         |
+| 836   | 0.005580439 | 68             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | DISTURBANCE      | 1         | 0         | 0         |
+| 823   | 0.005493662 | 72             | 0            | 1            | 0            | 0            | 1            | MOTOR VEHICLE VIOLATION  | VAL              | 1         | 1         | 0         |
+| 813   | 0.00542691  | 27             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | LARCENY          | 1         | 0         | 0         |
+| 810   | 0.005406885 | 9              | 1            | 1            | 0            | 1            | 1            | INVESTIGATIVE            | DRUGS            | 1         | 0         | 0         |
+| 719   | 0.004799445 | 12             | 0            | 1            | 0            | 0            | 0            | MOTOR VEHICLE VIOLATION  | VAL              | 1         | 0         | 0         |
+| 679   | 0.004532438 | 42             | 1            | 1            | 0            | 1            | 1            | OTHER                    | VAL              | 1         | 0         | 0         |
+| 656   | 0.004378909 | 41             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | LARCENY          | 1         | 0         | 0         |
+| 656   | 0.004378909 | 39             | 0            | 0            | 0            | 0            | 1            | OTHER                    | VAL              | 1         | 0         | 0         |
+| 656   | 0.004378909 | 64             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | INVESTIGATE      | 0         | 1         | 0         |
+| 618   | 0.004125253 | 40             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | TRESPASSING      | 1         | 0         | 0         |
+| 614   | 0.004098552 | 59             | 0            | 0            | 0            | 0            | 1            | INVESTIGATIVE            | PANHANDLING      | 1         | 0         | 0         |
+| 604   | 0.0040318   | 43             | 0            | 1            | 0            | 0            | 1            | MOTOR VEHICLE VIOLATION  | DRUGS            | 1         | 0         | 0         |
+| 572   | 0.003818195 | 38             | 0            | 1            | 0            | 0            | 0            | INVESTIGATIVE            | DRUGS            | 1         | 0         | 0         |
+| 550   | 0.003671342 | 76             | 1            | 0            | 0            | 1            | 1            | INVESTIGATIVE            | INVESTIGATE      | 1         | 0         | 0         |
+| 547   | 0.003651316 | 53             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | DRUGS            | 1         | 0         | 0         |
+| 540   | 0.00360459  | 35             | 1            | 1            | 0            | 1            | 1            | MOTOR VEHICLE VIOLATION  | VAL              | 1         | 0         | 0         |
+| 533   | 0.003557864 | 52             | 1            | 1            | 0            | 0            | 1            | RADIO CALL               | B&E              | 1         | 0         | 0         |
+| 530   | 0.003537838 | 50             | 0            | 1            | 0            | 0            | 1            | OTHER                    | TRESPASSING      | 1         | 0         | 0         |
+| 506   | 0.003377634 | 73             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | DISTURBANCE      | 1         | 0         | 0         |
+| 492   | 0.003284182 | 86             | 0            | 1            | 0            | 0            | 0            | INVESTIGATIVE            | VAL              | 1         | 0         | 0         |
+| 489   | 0.003264156 | 55             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | ALCOHOL          | 1         | 0         | 0         |
+| 489   | 0.003264156 | 92             | 0            | 1            | 0            | 0            | 1            | OTHER                    | DRUGS            | 1         | 0         | 0         |
+| 487   | 0.003250806 | 15             | 0            | 0            | 0            | 0            | 1            | INVESTIGATIVE            | PUBLIC DRINKING  | 1         | 0         | 0         |
+| 475   | 0.003170704 | 44             | 1            | 1            | 0            | 1            | 1            | MOTOR VEHICLE VIOLATION  | INVESTIGATE      | 1         | 0         | 0         |
+| 464   | 0.003097277 | 66             | 0            | 1            | 0            | 0            | 1            | OTHER                    | INVESTIGATE      | 1         | 1         | 0         |
+| 450   | 0.003003825 | 78             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | INVESTIGATE      | 1         | 0         | 1         |
+| 446   | 0.002977124 | 62             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | WARRANTS         | 1         | 0         | 0         |
+| 426   | 0.002843621 | 45             | 1            | 1            | 0            | 0            | 1            | RADIO CALL               | GUNSHOTS         | 1         | 0         | 0         |
+| 419   | 0.002796895 | 88             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | INVESTIGATE      | 1         | 1         | 0         |
+| 414   | 0.002763519 | 33             | 0            | 0            | 0            | 0            | 1            | RADIO CALL               | DISTURBANCE      | 1         | 0         | 0         |
+| 413   | 0.002756844 | 71             | 0            | 1            | 0            | 0            | 0            | INVESTIGATIVE            | TRESPASSING      | 1         | 0         | 0         |
+| 396   | 0.002643366 | 80             | 0            | 0            | 0            | 0            | 1            | OTHER                    | VAL              | 1         | 0         | 0         |
+| 386   | 0.002576614 | 49             | 0            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | INVESTIGATE      | 0         | 0         | 1         |
+| 376   | 0.002509863 | 81             | 1            | 0            | 0            | 0            | 0            | OTHER                    | INVESTIGATE      | 1         | 0         | 0         |
+| 373   | 0.002489837 | 74             | 1            | 1            | 0            | 0            | 1            | RADIO CALL               | FIREARM          | 1         | 0         | 0         |
+| 364   | 0.002429761 | 60             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | A&B              | 1         | 0         | 0         |
+| 354   | 0.002363009 | 61             | 0            | 0            | 0            | 0            | 1            | INVESTIGATIVE            | INVESTIGATE      | 1         | 1         | 0         |
+| 306   | 0.002042601 | 75             | 1            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | GUNSHOTS         | 1         | 0         | 0         |
+| 293   | 0.001955824 | 89             | 1            | 1            | 0            | 1            | 1            | MOTOR VEHICLE VIOLATION  | VAL              | 1         | 0         | 1         |
+| 288   | 0.001922448 | 57             | 0            | 1            | 0            | 0            | 1            | OTHER                    | PUBLIC DRINKIN   | 1         | 0         | 0         |
+| 283   | 0.001889072 | 83             | 0            | 1            | 0            | 0            | 1            | CRIMINAL VIOLATION       | VAL              | 1         | 0         | 0         |
+| 274   | 0.001828996 | 65             | 1            | 1            | 0            | 1            | 1            | INVESTIGATIVE            | INVESTIGATE      | 1         | 1         | 0         |
+| 244   | 0.001628741 | 34             | 1            | 1            | 0            | 1            | 1            | INVESTIGATIVE            | LARCENY          | 0         | 0         | 1         |
+| 241   | 0.001608715 | 8              | 0            | 1            | 0            | 0            | 0            | OTHER                    | VAL              | 1         | 0         | 0         |
+| 222   | 0.001481887 | 85             | 1            | 1            | 0            | 0            | 1            | OTHER                    | INVESTIGATE      | 0         | 0         | 1         |
+| 221   | 0.001475212 | 58             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | DISPUTE          | 1         | 0         | 0         |
+| 218   | 0.001455186 | 37             | 0            | 0            | 0            | 0            | 1            | INVESTIGATIVE            | DISTURBANCE      | 1         | 0         | 0         |
+| 200   | 0.001335033 | 69             | 1            | 1            | 0            | 1            | 1            | INVESTIGATIVE            | INVESTIGATE      | 1         | 0         | 1         |
+| 198   | 0.001321683 | 87             | 1            | 1            | 0            | 1            | 1            | MOTOR VEHICLE VIOLATION  | DRUGS            | 1         | 0         | 0         |
+| 174   | 0.001161479 | 79             | 0            | 1            | 0            | 0            | 1            | CRIMINAL VIOLATION       | INVESTIGATE      | 1         | 0         | 0         |
+| 171   | 0.001141453 | 77             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | PUBLIC DRINKING  | 1         | 0         | 0         |
+| 148   | 0.000987925 | 30             | 1            | 1            | 0            | 0            | 1            | INVESTIGATIVE            | LARCENY          | 1         | 1         | 0         |
+| 145   | 0.000967899 | 22             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | SICK ASSIST      | 1         | 0         | 0         |
+| 113   | 0.000754294 | 82             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | PANHANDLING      | 1         | 0         | 0         |
+| 109   | 0.000727593 | 90             | 1            | 1            | 0            | 1            | 1            | INVESTIGATIVE            | FIREARM          | 1         | 0         | 0         |
+| 93    | 0.00062079  | 16             | 0            | 1            | 0            | 0            | 1            | RADIO CALL               | ATTEMPTED B&E    | 1         | 0         | 0         |
+| 63    | 0.000420535 | 84             | 0            | 0            | 0            | 0            | 1            | RADIO CALL               | SICK ASSIST      | 1         | 0         | 0         |
+| 51    | 0.000340433 | 29             | 1            | 1            | 0            | 1            | 1            | OTHER                    | VAL              | 1         | 1         | 1         |
+| 49    | 0.000327083 | 23             | 0            | 1            | 0            | 0            | 0            | RADIO CALL               | HARASSMENT       | 1         | 0         | 0         |
+| 27    | 0.000180229 | 36             | 1            | 1            | 0            | 0            | 1            | RADIO CALL               | PUBLIC DRINKING  | 0         | 1         | 0         |
+
+
+Analysis: 
+
+All nuclei for FIOFS_TYPE_P are negative. For the features STOP_REASONS and FIFOS_REASONS the the most frequent nuclei are INVESTIGATE and INVESTIGATIVE. The outcome features are mainly positive (1) for F, while O and S have almost no occurences.
+It is worth mentioning that no pattern, relationship between the STOP_REASONS and FIOFS_REASONS nuclei values and the outcome can be seen. However, the outcome values O and S only appear in clusters with lower members.
+
+Position of clusters:
+
+<img src="clustering/cluster_stats/visualization/action_cluster_visu.jpg" alt="Chart" width="300px">
+
+### Date Cluster Analysis
+
+Total number of clusters: 15
+
+Top 3 Cluster:
+- No. 8 - 8.45%
+- No. 3 - 8.19%
+- No. 10 - 7.64%
+
+Distribution: \
+
+<img src="clustering/cluster_stats/univariate_pie_charts/pie_chart_('date_cluster', 'date_cluster').jpg" alt="Chart" width="300px">
+
+Cluster Insights:
+
+| Count | Percentage  | Date Cluster | Year         | Month         | Day          |
+|-------|-------------|--------------|--------------|---------------|--------------|
+| 12652 | 0.084454205 | 8            | 0.25         | 0.363636364   | 0.966666667  |
+| 12264 | 0.08186424  | 3            | 0.25         | 0.181818182   | 0.733333333  |
+| 11446 | 0.076403954 | 10           | 0.5          | 0.727272727   | 0.366666667  |
+| 10969 | 0.0732199   | 12           | 0.5          | 0.636363636   | 0.866666667  |
+| 10922 | 0.072906167 | 11           | 0.25         | 0.272727273   | 0.466666667  |
+| 10815 | 0.072191924 | 5            | 0.25         | 0.181818182   | 0.333333333  |
+| 10348 | 0.069074622 | 2            | 0            | 0.818181818   | 0.666666667  |
+| 9992  | 0.066698262 | 14           | 0.5          | 0.636363636   | 0.066666667  |
+| 9790  | 0.065349879 | 1            | 0.75         | 0.363636364   | 0.266666667  |
+| 9650  | 0.064415356 | 13           | 0.25         | 0.363636364   | 0.166666667  |
+| 9195  | 0.061378155 | 0            | 0.75         | 0.545454545   | 0.533333333  |
+| 8865  | 0.05917535  | 9            | 0.25         | 0             | 0.166666667  |
+| 8711  | 0.058147374 | 4            | 0            | 0.818181818   | 0.066666667  |
+| 7335  | 0.048962345 | 7            | 0.25         | 0             | 0.6          |
+| 6855  | 0.045758266 | 6            | 0            | 0.818181818   | 0.9          |
+
+
+Analysis: The number of clusters does not match with any of the unique values from the features, so that not simply one feature is used to cluster. Fuerther it can be seen that the year 2015 is not the nucleus of any cluster (value 1). Further the month February, Juny, November and December are not a mode value from any cluster, while May and Ocotber appear three times each. Furthermore, not all days are mode values of any cluster. The days 3rd and 6th of a month appear two times. 
+
+Position of clusters:
+
+<img src="clustering/cluster_stats/visualization/date_cluster_visu.jpg" alt="Chart" width="300px">
+
+
+### Complete Cluster Analysis
+
+This clustering was limited to 20 clusters - unlike the possible 100 of the groups.
+
+Total number of clusters: 10
+
+Top 3 clusters: 
+- No. 1 - 18.0%
+- No. 6 - 15.4%
+- No. 0 - 13.8%
+
+Analysis:
+The cluster size ranges from 18.0% (no. 1) to 2.8% (no. 8). The first cluster (no. 0) is based on the nucleus of cluster 2 of the subject group, which is is a white male with min-maxed age of 0.257 (28 years). \
+Its further characteristics are: \
+- No vehicle involved
+- OTHER for city
+- supervisor 8662 and "OTHER" officers
+- action cluster 0
+- date cluster 8
+
+The second cluster (no. 6) consists of the nuclei values:
+- Subject 0: black male of age 22 (complexion dark)
+- Vehcile 0: No vehicle involved
+- Location 1: district Dorchester
+- Officer 1
+- Action 0
+- Date 3
+
+The third one (no. 0):
+- Subject 1: black male of age 22 (complexion: medium)
+- Vehicle 0: No vehicle involved
+- Location 1: district Dorchester
+- Officer 0
+- Action 0
+- Date 3
+
+The analysis reveals that for the vehicle group the "no vehicle involved" cluster is dominant in all three top clusters. This points towards a distribution of the main value and no concentration. \
+For the subject the three top cluster from the subject group are reverse listed compared to the three top clusters from the general clustering. \
+The second and third top clusters have the district of Dorchester as the nucleus.
+A further investigation is not done, since the cluster quality points towards low cluster quality.
+
+## 4. Final Conclusion
+
+The percentages given here are all based on the results after imputing data. 
+
+### Claim: Disproportionately targeting certain communities
+The results indicate that the BPD utilizes practices such as racial profiling. The nuclei of the two largest clusters is described as 22-year old men of colour. \
+The data further shows that young people are much more often targeted than older people. This data is supported by the univariate analysis of the features. \
+The basic analysis revealed that only around 10% of the subjects are female. The clusters show this as well (no nucleus value is female) indicating a bias as well. \
+The univariate analysis showed that 86.3% of all subjects have prior records. This can be interpreted as follows: \
+The police focusses on targeting people with prior records. This itself is a strong indicator for biased police work. On the other hand it might explain the disproportional distribution of the other features. If the subject description (SEX, AGE, DESCRiPTION; COMPLEXION) align with the statistical values of people having prior records, then it explains the disproportionality. \
+E.g.: It is certain that the popoluation of Boston does not consist of almost 90% males. Based on the univariante data, the police is targeting mostly men. However, if 90% of people having records are male, then a focus on targeting people with records, would explain this value without the need of using practices such as racial profiling. \
+The results have to be contextualized with the data of the actual population of Boston.
+
+### Claim: Conectration of police in specific districts / regions
+The main locations are the city centre and the two districts Roxbury and Dorchester. All three together cover 58.2% of all police records. All three districts are south of the Charles River, indicating that the northern part of Boston is not as often targeted. \
+It is worth to investigate the social structure of these districts further. It can be suspected that the population of these districts are predominately people of colour. 
+
+### Claim: Biased work of specific police officers and supervisors
+Nearly 20% of all police records are linked to two supervisors. The records linked to these supervi-sors, have more than 75% black subjects. This indicates a personal bias of the supervisors. 

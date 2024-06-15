@@ -6,9 +6,7 @@ from feature_selec.feature_selection import select_features
 from final_preparation.final_prep import feature_final_preparation, feature_scaling
 from data_imputation.data_imputing import impute_data
 from stats.base_statistics import calculate_univariate_statistics, calculate_multivariate_statistics
-
-
-from clustering.data_clustering import clustering, second_clustering
+from clustering.data_clustering import clustering, second_clustering, group_cluster_analysis
 
 def read_csv_file(path) -> pd.DataFrame:
     return pd.read_csv(path, header=[0, 1])
@@ -18,7 +16,7 @@ def save_df_to_csv(df: pd.DataFrame, output_filename: str):
 
 
 def dept_11_analysis_main():
-    show_results = False
+    show_results = True
     threshold_to_drop = 30
     
     path = "raw_data/Dept_11-00091/11-00091_Field-Interviews_2011-2015.csv"    
@@ -141,7 +139,7 @@ def dept_11_analysis_main():
     print("------------------------------------")
     print("Start Final Preparation")
     print("------------------------------------")
-    run_comparison = True
+    run_comparison = False
 
     mutual_comparison_results, chi_comparison_results = feature_final_preparation(df=df, run_all=run_comparison)
     
@@ -149,13 +147,13 @@ def dept_11_analysis_main():
         pass
     elif not mutual_comparison_results.empty:
         print("Saving mutual feature comparison results.")
-        save_df_to_csv(df=mutual_comparison_results, output_filename="test/mutual_feature_comparison_results.csv")
+        save_df_to_csv(df=mutual_comparison_results, output_filename="final_preparation/mutual_feature_comparison_results.csv")
 
     if chi_comparison_results is None:
         pass
     elif not chi_comparison_results.empty:
         print("Saving chi feature comparison results.")
-        save_df_to_csv(df=chi_comparison_results, output_filename="test/chi_feature_comparison_results.csv")    
+        save_df_to_csv(df=chi_comparison_results, output_filename="final_preparation/chi_feature_comparison_results.csv")    
     
     
     if show_results:
@@ -173,7 +171,7 @@ def dept_11_analysis_main():
     univariate_statistics = calculate_univariate_statistics(df=df)
     if show_results:
         for key, value in univariate_statistics.items():
-            output_filename = f"statistics/statistic_values/univariate_statistics_{key}.csv"
+            output_filename = f"stats/statistic_values/univariate_statistics_{key}.csv"
             save_df_to_csv(df=value, output_filename=output_filename)
     
     # Creates 2D plots (option for 3D as well) -> time intensive process!
@@ -195,14 +193,17 @@ def dept_11_analysis_main():
     # 3: Grouping the features. -> Under investigation.
     run_type = 3
     clustered_df = clustering(df=df, run_type=run_type)
-    save_df_to_csv(df=clustered_df, output_filename="first_clustering.csv")
+    save_df_to_csv(df=clustered_df, output_filename="clustering/first_clustering.csv")
 
+    group_cluster_analysis(clustered_df)
+    
     final_df = second_clustering(clustered_df, run_type=run_type)
+    
     
     if final_df is None:
         pass
     else:
-        save_df_to_csv(final_df, "second_clustering.csv")
+        save_df_to_csv(final_df, "final_values.csv")
     
     
 if __name__ == "__main__":

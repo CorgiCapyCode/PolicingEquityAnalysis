@@ -22,6 +22,9 @@ def select_features(df: pd.DataFrame, show_results: bool =False):
     df.drop(("OFFICER_ETHNICITY", "ETHNICITY"), axis=1, inplace=True)
     # Dropping feature (UNKNOWN_FIELD_TYPE, TERRORISM) due to low variance.
     df.drop(("UNKNOWN_FIELD_TYPE", "TERRORISM"), axis=1, inplace=True)
+    # Dropping feartures ("SEARCH_CONDUCTED", "SEARCH") & ("SEARCH_REASON", "BASIS") due to low filling grade
+    df.drop(("SEARCH_CONDUCTED", "SEARCH"), axis=1, inplace=True)
+    df.drop(("SEARCH_REASON", "BASIS"), axis=1, inplace=True)
     # Compare (LOCATION_DISTRICT, DIST) & (LOCATION_DISTRICT.1, DIST_ID)
     # Compare (OFFICER_ASSIGNMENT.1, OFF_DIST) & (OFFICER_ASSIGNMENT, OFF_DIST_ID)
     p_value_loc_dist, cont_table_loc_dist = chi_square_test(df=df, feature_1=("LOCATION_DISTRICT", "DIST"), feature_2=("LOCATION_DISTRICT.1", "DIST_ID"))

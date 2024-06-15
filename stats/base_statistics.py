@@ -11,7 +11,7 @@ def calculate_univariate_statistics(df: pd.DataFrame) -> dict:
     return univariate_statistics
     
 
-def analyse_feature(df: pd.DataFrame, feature: str) -> pd.DataFrame:
+def analyse_feature(df: pd.DataFrame, feature: str, location: str ="stats") -> pd.DataFrame:
     value_counts = df[feature].value_counts()
     total_count = value_counts.sum()
     percentage = value_counts/total_count
@@ -31,14 +31,14 @@ def analyse_feature(df: pd.DataFrame, feature: str) -> pd.DataFrame:
     plt.title(f"Historgram for {feature}")
     plt.xlabel("Unique values")
     plt.ylabel("Counts")
-    plt.savefig(f"stats/univariate_histograms/histogram_{feature}.jpg")
+    plt.savefig(f"{location}/univariate_histograms/histogram_{feature}.jpg")
     plt.close()
     
     plt.figure(figsize=(12, 12))
     plotted_values.plot(kind="pie", autopct="%1.1f%%", startangle=140)
     plt.title(f"Pie Chart for {feature}")
     plt.axis("equal")
-    plt.savefig(f"stats/univariate_pie_charts/pie_chart_{feature}.jpg")
+    plt.savefig(f"{location}/univariate_pie_charts/pie_chart_{feature}.jpg")
     plt.close()
     return unique_values_df
 

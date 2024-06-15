@@ -4,15 +4,11 @@ import numpy as np
 
 
 def impute_data(df: pd.DataFrame, show_results: bool =False):
-  # Special Method
-  dependent_imputer(df=df, target_feature=("SEARCH_CONDUCTED", "SEARCH"), dependent_feature=("VEHICLE_YEAR", "VEH_YEAR_NUM"))
   
   # Univariate imputing methods
   prob_distribution_sex = simple_probabilistic_imputer(df=df, feature_name=("SUBJECT_GENDER", "SEX"))
   prob_distribution_date = simple_probabilistic_imputer(df=df, feature_name=("INCIDENT_DATE", "FIO_DATE"))
   prob_distribution_priors = simple_probabilistic_imputer(df=df, feature_name=("SUBJECT_DETAILS", "PRIORS"))
-  prob_distribution_search = simple_probabilistic_imputer(df=df, feature_name=("SEARCH_CONDUCTED", "SEARCH"))  
-  prob_distribution_basis = simple_probabilistic_imputer(df=df, feature_name=("SEARCH_REASON", "BASIS"))
   prob_distribution_stop_reasons = simple_probabilistic_imputer(df=df, feature_name=("INCIDENT_REASON", "STOP_REASONS"))
   prob_distribution_outcome = simple_probabilistic_imputer(df=df, feature_name=("DISPOSITION", "OUTCOME"))
   prob_distribution_age = simple_probabilistic_imputer(df=df, feature_name=("OFFICER_AGE", "AGE_AT_FIO_CORRECTED"))
@@ -54,10 +50,6 @@ def impute_data(df: pd.DataFrame, show_results: bool =False):
     print(prob_distribution_date)
     print(f"The probability distribution for feature ('SUBJECT_DETAILS', 'PRIORS') is:")
     print(prob_distribution_priors)
-    print(f"The probability distribution for feature ('SEARCH_CONDUCTED', 'SEARCH') is:")
-    print(prob_distribution_search)    
-    print(f"The probability distribution for feature ('SEARCH_REASON', 'BASIS') is:")
-    print(prob_distribution_basis)
     print(f"The probability distribution for feature ('INCIDENT_REASON', 'STOP_REASONS') is:")
     print(prob_distribution_stop_reasons)
     print(f"The probability distribution for feature ('DISPOSITION', 'OUTCOME') is:")
@@ -121,10 +113,3 @@ def multivariate_bayesian_imputer(df: pd.DataFrame, target_feature: str, cond_fe
     
     generated_values = np.random.choice(unique_target_values, size=missing_mask.sum(), p=probabilities)
     df.loc[missing_indicies, target_feature] = generated_values
-  
-
-def dependent_imputer(df: pd.DataFrame, target_feature: str, dependent_feature: str):
-  empty_rows = df[target_feature].isna()
-  no_vehicle_involved = df[dependent_feature] == "NO VEHICLE INVOLVED"
-  impute_condition = empty_rows & no_vehicle_involved
-  df.loc[impute_condition, target_feature] = "P"
